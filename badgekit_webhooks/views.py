@@ -14,4 +14,4 @@ def badge_issued_hook(request):
     except ValueError:
         return HttpResponseBadRequest("Bad JSON")
 
-    return HttpResponse("Hello, world.  Badges!!!")
+    return HttpResponse(json.dumps({"status": "ok"}), content_type="application/json")
