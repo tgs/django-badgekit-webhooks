@@ -11,9 +11,9 @@ def read(*parts):
 
 
 setup(
-    author="",
-    author_email="",
-    description="",
+    author="Thomas Grenfell Smith",
+    author_email="thomathom@gmail.com",
+    description="Webhook endpoint for Mozilla's BadgeKit API",
     name="django-badgekit_webhooks",
     long_description=read("README.rst"),
     version=__import__("badgekit_webhooks").__version__,
