@@ -23,6 +23,7 @@ hook_demo_data = '''{
 
 hook_url = reverse('badge_issued_hook')
 
+
 class HookTests(TestCase):
     def testCanPost(self):
         resp = self.client.post(hook_url)

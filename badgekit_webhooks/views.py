@@ -3,8 +3,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 
+
 def hello(request):
     return HttpResponse("Hello, world.  Badges!!!")
+
 
 @require_POST
 @csrf_exempt
