@@ -8,6 +8,13 @@ badgekit webhooks
     :target: https://coveralls.io/r/tgs/django-badgekit-webhooks
 
 
+Developing
+----------
+
+You can easily run this project under the Django development web server
+by cloning this project: https://github.com/tgs/webhook-project-site
+
+
 Running the Tests
 ------------------------------------
 
