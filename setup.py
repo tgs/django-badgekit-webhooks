@@ -14,10 +14,10 @@ setup(
     author="Thomas Grenfell Smith",
     author_email="thomathom@gmail.com",
     description="Webhook endpoint for Mozilla's BadgeKit API",
-    name="django-badgekit_webhooks",
+    name="django-badgekit-webhooks",
     long_description=read("README.rst"),
     version=__import__("badgekit_webhooks").__version__,
-    url="http://django-badgekit_webhooks.rtfd.org/",
+    url="http://django-badgekit-webhooks.rtfd.org/",
     license="MIT",
     packages=find_packages(),
     tests_require=[

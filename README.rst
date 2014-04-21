@@ -1,11 +1,11 @@
 badgekit webhooks
 ========================
 
-.. image:: https://travis-ci.org/tgs/python-badgekit-webhooks.png
-    :target: https://travis-ci.org/tgs/python-badgekit-webhooks
+.. image:: https://travis-ci.org/tgs/django-badgekit-webhooks.png
+    :target: https://travis-ci.org/tgs/django-badgekit-webhooks
 
-.. image:: https://coveralls.io/repos/tgs/python-badgekit-webhooks/badge.png
-    :target: https://coveralls.io/r/tgs/python-badgekit-webhooks
+.. image:: https://coveralls.io/repos/tgs/django-badgekit-webhooks/badge.png
+    :target: https://coveralls.io/r/tgs/django-badgekit-webhooks
 
 
 Running the Tests
