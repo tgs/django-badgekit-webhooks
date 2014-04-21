@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 
@@ -35,12 +36,12 @@ class HookTests(TestCase):
 
     def testRejectNonJSON(self):
         resp = self.client.post(hook_url,
-                data=u'!this is { not good json data%',
-                content_type="application/json")
+                    data='!this is { not good json data%',
+                    content_type="application/json")
         self.assertNotEqual(resp.status_code, 200)
 
     def testGoodRequest(self):
         resp = self.client.post(hook_url,
-                data=hook_demo_data,
-                content_type="application/json")
+                    data=hook_demo_data,
+                    content_type="application/json")
         self.assertEqual(resp.status_code, 200)

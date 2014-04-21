@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -12,7 +13,7 @@ def hello(request):
 @csrf_exempt
 def badge_issued_hook(request):
     try:
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode(request.encoding or 'utf-8'))
     except ValueError:
         return HttpResponseBadRequest("Bad JSON")
 
