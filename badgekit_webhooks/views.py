@@ -4,6 +4,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+from django.views.generic import ListView
 from . import models
 import json
 
@@ -33,3 +34,7 @@ def badge_issued_hook(request):
         return HttpResponseBadRequest("Bad JSON request: %s" % str(e))
 
     return HttpResponse(json.dumps({"status": "ok"}), content_type="application/json")
+
+
+class InstanceListView(ListView):
+    model = models.BadgeInstanceNotification
