@@ -30,6 +30,6 @@ def badge_issued_hook(request):
         obj.full_clean() # throws ValidationError if fields are bad.
         obj.save()
     except (ValueError, TypeError, ValidationError) as e:
-        return HttpResponseBadRequest("Bad JSON request: %s" % e.message)
+        return HttpResponseBadRequest("Bad JSON request: %s" % str(e))
 
     return HttpResponse(json.dumps({"status": "ok"}), content_type="application/json")
