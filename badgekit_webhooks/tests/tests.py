@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from django.test import TestCase
 from django.core.urlresolvers import reverse
+import json
 
 
 class Tests(TestCase):
@@ -18,9 +19,10 @@ hook_demo_data = '''{
     "uid": "asdf1234",
     "email": "awardee@example.com",
     "assertionUrl": "http://example.com/assertion/asdf1234",
-    "issuedOn": "TODO how is this encoded"
+    "issuedOn": 1398183058
 }
 '''
+hook_demo_obj = json.loads(hook_demo_data)
 
 hook_url = reverse('badge_issued_hook')
 
@@ -38,10 +40,38 @@ class HookTests(TestCase):
         resp = self.client.post(hook_url,
                     data='!this is { not good json data%',
                     content_type="application/json")
-        self.assertNotEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 400)
 
     def testGoodRequest(self):
         resp = self.client.post(hook_url,
                     data=hook_demo_data,
                     content_type="application/json")
         self.assertEqual(resp.status_code, 200)
+
+    def testRejectBadFields(self):
+        resp = self.client.post(hook_url,
+                data='{"uid": "jkjkjkj", "devilishField": 1234}',
+                content_type="application/json")
+        self.assertEqual(resp.status_code, 400)
+
+    def testRejectValidJSONButNotDict(self):
+        resp = self.client.post(hook_url,
+                data='[]',
+                content_type="application/json")
+        self.assertEqual(resp.status_code, 400)
+
+    def testRejectInvalidEmail(self):
+        data = dict(**hook_demo_obj)
+        data['email'] = 'This sentence has two erors and is not an email.'
+        resp = self.client.post(hook_url,
+                data=json.dumps(data),
+                content_type="application/json")
+        self.assertEqual(resp.status_code, 400)
+
+    def testRejectInvalidDate(self):
+        data = dict(**hook_demo_obj)
+        data['issuedOn'] = 'This sentence has two erors and is not a date.'
+        resp = self.client.post(hook_url,
+                data=json.dumps(data),
+                content_type="application/json")
+        self.assertEqual(resp.status_code, 400)
