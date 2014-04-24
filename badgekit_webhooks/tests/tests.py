@@ -113,6 +113,7 @@ class JWTTests(TestCase):
                         {
                             'body': {
                                 'alg': 'sha256',
-                                'hash': hashlib.sha256(hook_demo_data).hexdigest(),
+                                'hash': hashlib.sha256(
+                                    hook_demo_data.encode('utf-8')).hexdigest(),
                         }}, key=key))
             self.assertEqual(resp.status_code, 200)
