@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 import json
+import jwt
+import hashlib
 
 
 class Tests(TestCase):
@@ -91,3 +93,26 @@ class JWTTests(TestCase):
                     data=hook_demo_data,
                     content_type="application/json")
         self.assertEqual(resp.status_code, 401)
+
+    def testNoBodySig(self):
+        key = 'JWT key for testing'
+        with self.settings(BADGEKIT_JWT_KEY=key):
+            resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION=jwt.encode({'something': 'hi'}, key=key))
+            self.assertEqual(resp.status_code, 403)
+
+    def testSuccess(self):
+        key = 'JWT key for testing'
+        with self.settings(BADGEKIT_JWT_KEY=key):
+            resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION=jwt.encode(
+                        {
+                            'body': {
+                                'alg': 'sha256',
+                                'hash': hashlib.sha256(hook_demo_data).hexdigest(),
+                        }}, key=key))
+            self.assertEqual(resp.status_code, 200)
