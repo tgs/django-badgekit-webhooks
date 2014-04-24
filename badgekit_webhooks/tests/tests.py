@@ -29,49 +29,65 @@ hook_url = reverse('badge_issued_hook')
 
 class HookTests(TestCase):
     def testCanPost(self):
-        resp = self.client.post(hook_url)
-        self.assertNotEqual(resp.status_code, 405)
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url)
+            self.assertNotEqual(resp.status_code, 405)
 
     def testCannotGet(self):
-        resp = self.client.get(hook_url)
-        self.assertEqual(resp.status_code, 405)
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.get(hook_url)
+            self.assertEqual(resp.status_code, 405)
 
     def testRejectNonJSON(self):
-        resp = self.client.post(hook_url,
-                    data='!this is { not good json data%',
-                    content_type="application/json")
-        self.assertEqual(resp.status_code, 400)
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                        data='!this is { not good json data%',
+                        content_type="application/json")
+            self.assertEqual(resp.status_code, 400)
 
     def testGoodRequest(self):
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                        data=hook_demo_data,
+                        content_type="application/json")
+            self.assertEqual(resp.status_code, 200)
+
+    def testRejectBadFields(self):
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                    data='{"uid": "jkjkjkj", "devilishField": 1234}',
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 400)
+
+    def testRejectValidJSONButNotDict(self):
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                    data='[]',
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 400)
+
+    def testRejectInvalidEmail(self):
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            data = dict(**hook_demo_obj)
+            data['email'] = 'This sentence has two erors and is not an email.'
+            resp = self.client.post(hook_url,
+                    data=json.dumps(data),
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 400)
+
+    def testRejectInvalidDate(self):
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            data = dict(**hook_demo_obj)
+            data['issuedOn'] = 'This sentence has two erors and is not a date.'
+            resp = self.client.post(hook_url,
+                    data=json.dumps(data),
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 400)
+
+
+class JWTTests(TestCase):
+    def testRejectNoJWT(self):
         resp = self.client.post(hook_url,
                     data=hook_demo_data,
                     content_type="application/json")
-        self.assertEqual(resp.status_code, 200)
-
-    def testRejectBadFields(self):
-        resp = self.client.post(hook_url,
-                data='{"uid": "jkjkjkj", "devilishField": 1234}',
-                content_type="application/json")
-        self.assertEqual(resp.status_code, 400)
-
-    def testRejectValidJSONButNotDict(self):
-        resp = self.client.post(hook_url,
-                data='[]',
-                content_type="application/json")
-        self.assertEqual(resp.status_code, 400)
-
-    def testRejectInvalidEmail(self):
-        data = dict(**hook_demo_obj)
-        data['email'] = 'This sentence has two erors and is not an email.'
-        resp = self.client.post(hook_url,
-                data=json.dumps(data),
-                content_type="application/json")
-        self.assertEqual(resp.status_code, 400)
-
-    def testRejectInvalidDate(self):
-        data = dict(**hook_demo_obj)
-        data['issuedOn'] = 'This sentence has two erors and is not a date.'
-        resp = self.client.post(hook_url,
-                data=json.dumps(data),
-                content_type="application/json")
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 401)

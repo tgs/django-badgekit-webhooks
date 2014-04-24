@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from django.conf import settings
 import datetime
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.core.exceptions import ValidationError
@@ -13,10 +14,16 @@ def hello(request):
     return HttpResponse("Hello, world.  Badges!!!")
 
 
+def should_skip_jwt_auth():
+    return getattr(settings, 'BADGEKIT_SKIP_JWT_AUTH', False)
+
+
 @require_POST
 @csrf_exempt
 def badge_issued_hook(request):
-    # TODO validate Authorization header
+    if not should_skip_jwt_auth():
+        # TODO actually check :)
+        return HttpResponse('JWT auth required', status=401)
 
     try:
         data = json.loads(request.body.decode(request.encoding or 'utf-8'))
