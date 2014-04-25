@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 from django.db import models
+import django.dispatch
 
 
 class BadgeInstanceNotification(models.Model):
@@ -12,3 +13,7 @@ class BadgeInstanceNotification(models.Model):
     email = models.EmailField(max_length=255)
     assertionUrl = models.URLField(max_length=255)
     issuedOn = models.DateTimeField(db_index=True)
+
+
+badge_instance_issued = django.dispatch.Signal(
+        providing_args=['uid', 'email', 'assertionUrl', 'issuedOn'])

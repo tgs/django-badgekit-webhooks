@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 import json
 import jwt
 import hashlib
+import contextlib
 
 
 class Tests(TestCase):
@@ -27,6 +28,38 @@ hook_demo_data = '''{
 hook_demo_obj = json.loads(hook_demo_data)
 
 hook_url = reverse('badge_issued_hook')
+
+
+class CatchingSignal(object):
+    def __init__(self, signal):
+        self._signal = signal
+        self.caught = False
+        self.sender = None
+        self.kwargs = None
+
+    def __enter__(self):
+        self._signal.connect(self)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._signal.disconnect(self)
+
+    # Called by the signal dispatcher
+    def __call__(self, sender, **kwargs):
+        self.caught = True
+        self.sender = sender
+        self.kwargs = kwargs
+
+
+class CatchingSignalTestTestTest(TestCase):
+    def testCanCatch(self):
+        import django.dispatch
+        sig = django.dispatch.Signal(providing_args=['nifty'])
+        with CatchingSignal(sig) as catcher:
+            sig.send(self, nifty="bill gates")
+            self.assertTrue(catcher.caught)
+            self.assertEqual(catcher.kwargs['nifty'], 'bill gates')
+            self.assertIs(catcher.sender, self)
 
 
 class HookTests(TestCase):
@@ -117,3 +150,16 @@ class JWTTests(TestCase):
                                     hook_demo_data.encode('utf-8')).hexdigest(),
                         }}, key=key))
             self.assertEqual(resp.status_code, 200)
+
+
+class SignalTest(TestCase):
+    def testSignalIsSent(self):
+        from badgekit_webhooks.models import badge_instance_issued
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            with CatchingSignal(badge_instance_issued) as catcher:
+                self.client.post(hook_url,
+                        data=hook_demo_data,
+                        content_type="application/json")
+                self.assertTrue(catcher.caught)
+                self.assertEqual(catcher.kwargs['email'], 'awardee@example.com')
+                self.assertEqual(catcher.kwargs['assertionUrl'], "http://example.com/assertion/asdf1234")
