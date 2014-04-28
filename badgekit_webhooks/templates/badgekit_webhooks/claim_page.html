@@ -7,8 +7,7 @@
 {% block body %}
   <h2>Claim your badge!</h2>
 
-  <!-- TODO fix cross-site scripting by properly encoding assertionURL -->
-  <a href="javascript:OpenBadges.issue(['{{ assertionUrl }}']);">
+  <a href="javascript:OpenBadges.issue(['{{ assertionUrl|escapejs }}']);">
     CLICK HERE TO CLAIM THAT BADGE
   </a>
 {% endblock %}
