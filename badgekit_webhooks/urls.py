@@ -9,4 +9,5 @@ urlpatterns = patterns(
     url(r"^issued/$", "badgekit_webhooks.views.badge_issued_hook",
         name="badge_issued_hook"),
     url(r"^instances/$", views.InstanceListView.as_view()),
+    url(r"^claim/([-A-Za-z0-9_]+)/$", 'badgekit_webhooks.views.claim_page'),
     )

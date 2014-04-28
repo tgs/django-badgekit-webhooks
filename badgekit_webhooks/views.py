@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 import datetime
 from django.http import HttpResponse, HttpResponseBadRequest
+from django.shortcuts import render
 from django.core.exceptions import ValidationError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
@@ -11,6 +12,12 @@ import json
 import jwt
 import hashlib
 import logging
+from django.core.urlresolvers import reverse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+decode_param = urlsafe_base64_decode
+encode_param = urlsafe_base64_encode
+
 
 logger = logging.getLogger(__name__)
 
@@ -73,3 +80,18 @@ def badge_issued_hook(request):
 
 class InstanceListView(ListView):
     model = models.BadgeInstanceNotification
+
+
+def create_claim_url(assertionUrl):
+    return reverse('badgekit_webhooks.views.claim_page',
+            args=[encode_param(assertionUrl)])
+
+
+def claim_page(request, b64_assertion_url):
+    assertionUrl = decode_param(b64_assertion_url)
+    # TODO might want to validate the URL against a whitelist - there might be
+    # no security issue, but it makes me uneasy not to...
+
+    return render(request, 'badgekit_webhooks/claim_page.html', {
+        'assertionUrl': assertionUrl,
+        })

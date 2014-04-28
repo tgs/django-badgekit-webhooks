@@ -37,6 +37,9 @@ def runtests(*test_args):
 
     parent = os.path.dirname(os.path.abspath(__file__))
     sys.path.insert(0, parent)
+    settings.TEMPLATE_DIRS = settings.TEMPLATE_DIRS + (
+            os.path.join(parent, 'badgekit_webhooks/tests/templates'),
+            )
 
     try:
         from django.test.simple import DjangoTestSuiteRunner as TestRunner

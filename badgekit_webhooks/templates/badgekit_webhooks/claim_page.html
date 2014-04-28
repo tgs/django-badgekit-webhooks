@@ -1,0 +1,14 @@
+{% extends "site_base.html" %}
+
+{% block extra_head %}
+  <script src="https://backpack.openbadges.org/issuer.js"></script>
+{% endblock %}
+
+{% block body %}
+  <h2>Claim your badge!</h2>
+
+  <!-- TODO fix cross-site scripting by properly encoding assertionURL -->
+  <a href="javascript:OpenBadges.issue(['{{ assertionUrl }}']);">
+    CLICK HERE TO CLAIM THAT BADGE
+  </a>
+{% endblock %}
