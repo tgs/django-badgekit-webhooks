@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import re
 from django.conf import settings
 import datetime
 from django.http import HttpResponse, HttpResponseBadRequest
@@ -59,6 +60,9 @@ def get_jwt_key():
     return key
 
 
+auth_header_re = re.compile(r'JWT token="([0-9A-Za-z-_.]+)"')
+
+
 @require_POST
 @csrf_exempt
 def badge_issued_hook(request):
@@ -66,9 +70,15 @@ def badge_issued_hook(request):
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         if not auth_header:
             return HttpResponse('JWT auth required', status=401)
+        match = auth_header_re.match(auth_header)
+        if not match:
+            logging.info("Bad auth header: <<%s>>" % repr(auth_header))
+            return HttpResponse('Malformed Authorization header', status=403)
+
+        auth_token = match.group(1)
 
         try:
-            payload = jwt.decode(auth_header, key=get_jwt_key())
+            payload = jwt.decode(auth_token, key=get_jwt_key())
             body_sig = payload['body']['hash']
             # Assuming sha256 for now.
             if body_sig != hashlib.sha256(request.body).hexdigest():
@@ -77,6 +87,7 @@ def badge_issued_hook(request):
             # TODO: test method, etc.
 
         except (jwt.DecodeError, KeyError):
+            #logging.exception('Bad JWT auth')
             return HttpResponse('Bad JWT auth', status=403)
 
     try:

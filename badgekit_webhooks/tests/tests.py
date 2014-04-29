@@ -131,7 +131,8 @@ class JWTTests(TestCase):
             resp = self.client.post(hook_url,
                     data=hook_demo_data,
                     content_type="application/json",
-                    HTTP_AUTHORIZATION=jwt.encode({'something': 'hi'}, key=key))
+                    HTTP_AUTHORIZATION=(
+                        'JWT token="%s"' % jwt.encode({'something': 'hi'}, key=key)))
             self.assertEqual(resp.status_code, 403)
 
     def testSuccess(self):
@@ -140,13 +141,14 @@ class JWTTests(TestCase):
             resp = self.client.post(hook_url,
                     data=hook_demo_data,
                     content_type="application/json",
-                    HTTP_AUTHORIZATION=jwt.encode(
+                    HTTP_AUTHORIZATION=(
+                        'JWT token="%s"' % jwt.encode(
                         {
                             'body': {
                                 'alg': 'sha256',
                                 'hash': hashlib.sha256(
                                     hook_demo_data.encode('utf-8')).hexdigest(),
-                        }}, key=key))
+                        }}, key=key)))
             self.assertEqual(resp.status_code, 200)
 
 
