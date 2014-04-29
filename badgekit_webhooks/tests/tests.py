@@ -118,6 +118,10 @@ class HookTests(TestCase):
             self.assertEqual(resp.status_code, 400)
 
 
+def make_jwt_header(token):
+    hdr = 'JWT token="%s"' % token.decode('ascii')
+    return hdr
+
 class JWTTests(TestCase):
     def testRejectNoJWT(self):
         resp = self.client.post(hook_url,
@@ -132,7 +136,7 @@ class JWTTests(TestCase):
                     data=hook_demo_data,
                     content_type="application/json",
                     HTTP_AUTHORIZATION=(
-                        'JWT token="%s"' % jwt.encode({'something': 'hi'}, key=key)))
+                        make_jwt_header(jwt.encode({'something': 'hi'}, key=key))))
             self.assertEqual(resp.status_code, 403)
 
     def testSuccess(self):
@@ -142,14 +146,14 @@ class JWTTests(TestCase):
                     data=hook_demo_data,
                     content_type="application/json",
                     HTTP_AUTHORIZATION=(
-                        'JWT token="%s"' % jwt.encode(
+                        make_jwt_header(jwt.encode(
                         {
                             'body': {
                                 'alg': 'sha256',
                                 'hash': hashlib.sha256(
                                     hook_demo_data.encode('utf-8')).hexdigest(),
-                        }}, key=key)))
-            self.assertEqual(resp.status_code, 200)
+                        }}, key=key))))
+            self.assertEqual(resp.status_code, 200, resp.content)
 
 
 class SignalTest(TestCase):
