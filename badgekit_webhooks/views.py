@@ -84,7 +84,6 @@ def badge_issued_hook(request):
             if body_sig != hashlib.sha256(request.body).hexdigest():
                 # Timing attack shouldn't matter: attacker can see the sig anyway.
                 return HttpResponse('Bad body signature', status=403)
-            # TODO: test method, etc.
 
         except (jwt.DecodeError, KeyError):
             #logging.exception('Bad JWT auth')
