@@ -5,9 +5,11 @@ import datetime
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
+from django.template.loader import render_to_string
 from . import models
 import json
 import jwt
@@ -58,6 +60,10 @@ def get_jwt_key():
         logger.error('Got a webhook request, but no BADGEKIT_JWT_KEY configured! Rejecting.')
         raise jwt.DecodeError('No JWT Key')
     return key
+
+
+def should_send_claim_emails():
+    return getattr(settings, 'BADGEKIT_SEND_CLAIM_EMAILS', False)
 
 
 auth_header_re = re.compile(r'JWT token="([0-9A-Za-z-_.]+)"')
@@ -120,9 +126,23 @@ def create_claim_url(assertionUrl):
 
 def claim_page(request, b64_assertion_url):
     assertionUrl = decode_param(b64_assertion_url)
-    # TODO might want to validate the URL against a whitelist - there might be
-    # no security issue, but it makes me uneasy not to...
+    # TODO validate the URL against a whitelist
 
     return render(request, 'badgekit_webhooks/claim_page.html', {
         'assertionUrl': assertionUrl,
         })
+
+
+# 'sender' here is a Django signal sender, not an e-mail sender.
+def send_claim_email(sender, **kwargs):
+    if not should_send_claim_emails():
+        return
+
+    text_message = render_to_string('badgekit_webhooks/claim_email.txt', kwargs)
+    email = EmailMessage("You've earned a badge!", text_message,
+            'from@example.com', [kwargs['email']])
+
+    email.send()
+
+
+models.badge_instance_issued.connect(send_claim_email, dispatch_uid='email-sender')

@@ -1,0 +1,6 @@
+You got this assertion:
+
+{{ assertionUrl }}
+
+To claim it, go to...
+

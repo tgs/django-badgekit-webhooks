@@ -8,6 +8,7 @@ import contextlib
 
 
 from .claim_tests import *
+from .email_tests import *
 
 
 class Tests(TestCase):
