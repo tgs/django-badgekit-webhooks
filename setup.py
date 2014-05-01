@@ -23,6 +23,7 @@ setup(
     tests_require=[
         "Django>=1.4",
         'httpretty',
+        "django-nose",
     ],
     install_requires=[
         "pyjwt",

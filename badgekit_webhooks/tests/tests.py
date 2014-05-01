@@ -5,17 +5,7 @@ import json
 import jwt
 import hashlib
 import contextlib
-from badgekit_webhooks import utils
 
-
-from .claim_tests import *
-from .email_tests import *
-
-
-class Tests(TestCase):
-    def testHello(self):
-        resp = self.client.get('/hello/')
-        self.assertEqual(resp.status_code, 200)
 
 hook_demo_data = '''{
     "action": "award",
