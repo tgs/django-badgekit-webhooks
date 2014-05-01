@@ -27,20 +27,12 @@ def hello(request):
     return HttpResponse("Hello, world.  Badges!!!")
 
 
-def should_skip_jwt_auth():
-    return getattr(settings, 'BADGEKIT_SKIP_JWT_AUTH', False)
-
-
 def get_jwt_key():
-    key = getattr(settings, 'BADGEKIT_JWT_KEY', None)
+    key = settings.BADGEKIT_JWT_KEY
     if not key:
         logger.error('Got a webhook request, but no BADGEKIT_JWT_KEY configured! Rejecting.')
         raise jwt.DecodeError('No JWT Key')
     return key
-
-
-def should_send_claim_emails():
-    return getattr(settings, 'BADGEKIT_SEND_CLAIM_EMAILS', False)
 
 
 auth_header_re = re.compile(r'JWT token="([0-9A-Za-z-_.]+)"')
@@ -49,7 +41,7 @@ auth_header_re = re.compile(r'JWT token="([0-9A-Za-z-_.]+)"')
 @require_POST
 @csrf_exempt
 def badge_issued_hook(request):
-    if not should_skip_jwt_auth():
+    if not settings.BADGEKIT_SKIP_JWT_AUTH:
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         if not auth_header:
             return HttpResponse('JWT auth required', status=401)
@@ -112,7 +104,7 @@ def claim_page(request, b64_assertion_url):
 
 # 'sender' here is a Django signal sender, not an e-mail sender.
 def send_claim_email(sender, **kwargs):
-    if not should_send_claim_emails():
+    if not settings.BADGEKIT_SEND_CLAIM_EMAILS:
         return
 
     context = dict(

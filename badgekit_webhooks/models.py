@@ -1,6 +1,16 @@
 from __future__ import unicode_literals
 from django.db import models
 import django.dispatch
+from appconf import AppConf
+
+
+class BadgekitWebhooksAppConf(AppConf):
+    SKIP_JWT_AUTH = False
+    JWT_KEY = None
+    SENT_CLAIM_EMAILS = False
+
+    class Meta:
+        prefix = 'badgekit'
 
 
 class BadgeInstanceNotification(models.Model):

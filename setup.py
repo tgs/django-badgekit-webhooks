@@ -25,6 +25,7 @@ setup(
     ],
     install_requires=[
         "pyjwt",
+        "django-appconf",
     ],
     test_suite="runtests.runtests",
     classifiers=[
