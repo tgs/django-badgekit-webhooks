@@ -57,11 +57,12 @@ def badge_issued_hook(request):
             body_sig = payload['body']['hash']
             # Assuming sha256 for now.
             if body_sig != hashlib.sha256(request.body).hexdigest():
-                # Timing attack shouldn't matter: attacker can see the sig anyway.
+                # TODO test this
+                logging.warning("Bad JWT signature on webhook body")
                 return HttpResponse('Bad body signature', status=403)
 
         except (jwt.DecodeError, KeyError):
-            #logging.exception('Bad JWT auth')
+            logging.exception('Bad JWT auth')
             return HttpResponse('Bad JWT auth', status=403)
 
     try:
