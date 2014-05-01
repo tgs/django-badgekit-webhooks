@@ -77,7 +77,7 @@ def badge_issued_hook(request):
         obj.full_clean() # throws ValidationError if fields are bad.
         obj.save()
 
-        models.badge_instance_issued.send_robust(obj, **data)
+        models.badge_instance_issued.send(obj, **data)
     except (ValueError, TypeError, ValidationError) as e:
         return HttpResponseBadRequest("Bad JSON request: %s" % str(e))
 
