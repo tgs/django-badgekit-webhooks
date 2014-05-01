@@ -12,6 +12,7 @@ DEFAULT_SETTINGS = dict(
         "django.contrib.auth",
         "django.contrib.contenttypes",
         "django.contrib.sites",
+        "django.contrib.staticfiles",
         "badgekit_webhooks",
         "badgekit_webhooks.tests"
     ],
@@ -21,6 +22,7 @@ DEFAULT_SETTINGS = dict(
             "NAME": ":memory:",
         }
     },
+    STATIC_URL="/static/",
     SITE_ID=1,
     ROOT_URLCONF="badgekit_webhooks.tests.urls",
     SECRET_KEY="notasecret",
