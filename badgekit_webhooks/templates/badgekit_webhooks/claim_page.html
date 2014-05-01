@@ -21,7 +21,7 @@
       <img src="#">
     </p>
 
-    <p><a class="btn btn-lg btn-success" href="javascript:OpenBadges.issue(['{{ assertionUrl|escapejs }}']);" role="button">Send to backpack</a></p>
+    <p><a class="btn btn-lg btn-success" href="javascript:issueBadge();" role="button">Send to backpack</a></p>
   </div>
 
   <div class="row marketing">
@@ -38,6 +38,19 @@
   </div>
 
   <div class="alert alert-info">
-    If this is a real claim page, the assertion for the badge instance lives <a href="{{ assertionUrl }}">here.</a>
-    </div>
+    If this is a real claim page, the assertion for the badge instance lives
+    <a id="assertionUrl" href="{{ assertionUrl }}">here.</a>
+  </div>
+
+
+  <script>
+    function issueBadge() {
+      var assertionUrl = $('a#assertionUrl').attr('href');
+      OpenBadges.issue([assertionUrl], function(errors, successes) {
+          if (errors) {
+            console.log(errors);
+          }
+      });
+    }
+  </script>
 {% endblock %}
