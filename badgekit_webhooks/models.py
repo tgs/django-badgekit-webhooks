@@ -8,7 +8,7 @@ from django.templatetags.static import static
 class BadgekitWebhooksAppConf(AppConf):
     SKIP_JWT_AUTH = False
     JWT_KEY = None
-    SENT_CLAIM_EMAILS = False
+    SEND_CLAIM_EMAILS = False
     DEFAULT_BADGE_IMAGE = static('badgekit_webhooks/default_badge.png')
 
     class Meta:
