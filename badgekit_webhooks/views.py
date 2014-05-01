@@ -95,7 +95,9 @@ def create_claim_url(assertionUrl):
 
 
 def claim_page(request, b64_assertion_url):
-    assertionUrl = utils.decode_param(b64_assertion_url)
+    # The URL should be ASCII encoded: only IRIs use higher Unicode chars.  Right????
+    assertionUrl = utils.decode_param(b64_assertion_url).decode('ascii')
+
     # TODO validate the URL against a whitelist
 
     return render(request, 'badgekit_webhooks/claim_page.html', {
