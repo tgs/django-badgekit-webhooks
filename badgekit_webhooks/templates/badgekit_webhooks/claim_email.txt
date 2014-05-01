@@ -2,5 +2,5 @@ You got this assertion:
 
 {{ assertionUrl }}
 
-To claim it, go to...
+To claim it, go to {{ claim_url }}
 

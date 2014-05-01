@@ -10,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 from django.template.loader import render_to_string
+from django.utils.encoding import smart_bytes
 from . import models
 import json
 import jwt
@@ -138,7 +139,12 @@ def send_claim_email(sender, **kwargs):
     if not should_send_claim_emails():
         return
 
-    text_message = render_to_string('badgekit_webhooks/claim_email.txt', kwargs)
+    context = dict(
+            claim_url = create_claim_url(smart_bytes(kwargs['assertionUrl']))
+            )
+    context.update(kwargs)
+
+    text_message = render_to_string('badgekit_webhooks/claim_email.txt', context)
     email = EmailMessage("You've earned a badge!", text_message,
             'from@example.com', [kwargs['email']])
 
