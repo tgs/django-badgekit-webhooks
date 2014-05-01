@@ -180,6 +180,21 @@ class JWTTests(TestCase):
                         }}, key=key))))
             self.assertEqual(resp.status_code, 200, resp.content)
 
+    def testRejectWithNoKey(self):
+        with self.settings(BADGEKIT_JWT_KEY=None):
+            resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION=(
+                        make_jwt_header(jwt.encode(
+                        {
+                            'body': {
+                                'alg': 'sha256',
+                                'hash': hashlib.sha256(
+                                    hook_demo_data.encode('utf-8')).hexdigest(),
+                        }}, key='some key'))))
+            self.assertEqual(resp.status_code, 403, resp.content)
+
 
 class SignalTest(TestCase):
     def testSignalIsSent(self):
