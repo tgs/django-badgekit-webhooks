@@ -47,7 +47,7 @@ def badge_issued_hook(request):
             return HttpResponse('JWT auth required', status=401)
         match = auth_header_re.match(auth_header)
         if not match:
-            logging.info("Bad auth header: <<%s>>" % repr(auth_header))
+            logger.info("Bad auth header: <<%s>>" % repr(auth_header))
             return HttpResponse('Malformed Authorization header', status=403)
 
         auth_token = match.group(1)
@@ -57,11 +57,11 @@ def badge_issued_hook(request):
             body_sig = payload['body']['hash']
             # Assuming sha256 for now.
             if body_sig != hashlib.sha256(request.body).hexdigest():
-                logging.warning("Bad JWT signature on webhook body")
+                logger.warning("Bad JWT signature on webhook body")
                 return HttpResponse('Bad body signature', status=403)
 
         except (jwt.DecodeError, KeyError):
-            logging.exception('Bad JWT auth')
+            logger.exception('Bad JWT auth')
             return HttpResponse('Bad JWT auth', status=403)
 
     try:
@@ -108,11 +108,13 @@ def claim_page(request, b64_assertion_url):
 # 'sender' here is a Django signal sender, not an e-mail sender.
 def send_claim_email(sender, **kwargs):
     if not settings.BADGEKIT_SEND_CLAIM_EMAILS:
+        logger.warning('Not sending e-mail to a badge earner, because settings.BADGEKIT_SEND_CLAIM_EMAILS is False')
         return
 
-    context = dict(
-            claim_url = create_claim_url(smart_bytes(kwargs['assertionUrl'])),
-            )
+    logger.debug('Sending e-mail to a badge earner')
+    context = {
+            'claim_url': create_claim_url(smart_bytes(kwargs['assertionUrl'])),
+            }
     context.update(kwargs)
 
     text_message = render_to_string('badgekit_webhooks/claim_email.txt', context)
