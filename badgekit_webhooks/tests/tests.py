@@ -131,6 +131,24 @@ class JWTTests(TestCase):
                         make_jwt_header(jwt.encode({'something': 'hi'}, key=key))))
             self.assertEqual(resp.status_code, 403)
 
+    def testBadBodySig(self):
+        with self.settings(BADGEKIT_JWT_KEY='the key that this webhook expects'):
+            resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION=(
+                        make_jwt_header(jwt.encode(
+                            {
+                                'body': {
+                                    'alg': 'sha256',
+                                    'hash': hashlib.sha256(
+                                        hook_demo_data.encode('utf-8')).hexdigest(),
+                                    }
+                                },
+                            key='a different key, the sig will be bad',
+                                ))))
+            self.assertEqual(resp.status_code, 403)
+
     def testSuccess(self):
         key = 'JWT key for testing'
         with self.settings(BADGEKIT_JWT_KEY=key):
