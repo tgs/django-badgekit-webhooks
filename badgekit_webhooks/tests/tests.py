@@ -169,11 +169,3 @@ class SignalTest(TestCase):
                 self.assertTrue(catcher.caught)
                 self.assertEqual(catcher.kwargs['email'], 'awardee@example.com')
                 self.assertEqual(catcher.kwargs['assertionUrl'], "http://example.com/assertion/asdf1234")
-
-
-class ClaimImageTest(TestCase):
-    def testUnknownImage(self):
-        default_url = 'http://example.com/no.gophers.png'
-        with self.settings(BADGEKIT_DEFAULT_BADGE_IMAGE=default_url):
-            url = utils.get_image_for_assertion('gopher://bad.url')
-            self.assertEqual(url, default_url)
