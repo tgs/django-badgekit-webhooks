@@ -40,7 +40,7 @@ def get_image_for_assertion(assertion_url):
         assertion_obj = json.loads(assertion_resp.text)
         badge_url = assertion_obj['badge']
         badge_resp = requests.get(badge_url)
-        badge_obj = json.loads(badge_resp)
+        badge_obj = json.loads(badge_resp.text)
         return badge_obj['image']
 
     except (requests.exceptions.RequestException, ValueError, KeyError):

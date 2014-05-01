@@ -40,3 +40,22 @@ class ClaimImageTest(TestCase):
             self.assertEqual(url, default_url)
             req = httpretty.last_request()
             self.assertEqual(req.path, '/assertion.json')
+
+    @httpretty.activate
+    def testGoodAssertion(self):
+        default_url = 'http://example.com/no.gophers.png'
+        good_url = 'http://example.com/correct-image.png'
+        with self.settings(BADGEKIT_DEFAULT_BADGE_IMAGE=default_url):
+            httpretty.register_uri(httpretty.GET,
+                    re.compile('example.com/assertion'),
+                    body=json.dumps({
+                        'badge': 'http://example.com/badge.json',
+                        }))
+            httpretty.register_uri(httpretty.GET,
+                    re.compile('example.com/badge'),
+                    body=json.dumps({
+                        'image': good_url,
+                        }))
+            url = utils.get_image_for_assertion('http://example.com/assertion.json')
+
+            self.assertEqual(url, good_url)
