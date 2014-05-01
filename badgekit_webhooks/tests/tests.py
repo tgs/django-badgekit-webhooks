@@ -127,6 +127,13 @@ class JWTTests(TestCase):
                     content_type="application/json")
         self.assertEqual(resp.status_code, 401)
 
+    def testRejectBadHeader(self):
+        resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION="Jwt tOkEn= blah")
+        self.assertEqual(resp.status_code, 403)
+
     def testNoBodySig(self):
         key = 'JWT key for testing'
         with self.settings(BADGEKIT_JWT_KEY=key):
