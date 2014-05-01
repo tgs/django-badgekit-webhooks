@@ -20,6 +20,12 @@ hook_demo_obj = json.loads(hook_demo_data)
 hook_url = reverse('badge_issued_hook')
 
 
+class HelloTest(TestCase):
+    def testHello(self):
+        url = reverse('badgekit_webhooks_hello')
+        self.client.get(url)
+
+
 class CatchingSignal(object):
     def __init__(self, signal):
         self._signal = signal
