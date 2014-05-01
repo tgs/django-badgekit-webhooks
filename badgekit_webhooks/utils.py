@@ -32,7 +32,12 @@ encode_param = urlsafe_base64_encode
 
 
 def get_image_for_assertion(assertion_url):
-    "Given a badge assertion URL, return an image for that assertion."
+    """
+    Given a badge assertion URL, return an image for that assertion.
+
+    If the assertion is not available or parseable, returns a default
+    image, which is settings.BADGEKIT_DEFAULT_BADGE_IMAGE.
+    """
     # TODO: make sure various URLs are subjected to a whitelist test.
     # Maybe also check that they are reasonable size, etc?
     try:
