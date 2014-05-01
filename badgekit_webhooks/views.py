@@ -17,7 +17,7 @@ import jwt
 import hashlib
 import logging
 from django.core.urlresolvers import reverse
-from .utils import decode_param, encode_param
+from . import utils
 
 
 logger = logging.getLogger(__name__)
@@ -90,15 +90,16 @@ class InstanceListView(ListView):
 
 def create_claim_url(assertionUrl):
     return reverse('badgekit_webhooks.views.claim_page',
-            args=[encode_param(assertionUrl)])
+            args=[utils.encode_param(assertionUrl)])
 
 
 def claim_page(request, b64_assertion_url):
-    assertionUrl = decode_param(b64_assertion_url)
+    assertionUrl = utils.decode_param(b64_assertion_url)
     # TODO validate the URL against a whitelist
 
     return render(request, 'badgekit_webhooks/claim_page.html', {
         'assertionUrl': assertionUrl,
+        'badge_image': utils.get_image_for_assertion(assertionUrl),
         })
 
 
@@ -108,7 +109,7 @@ def send_claim_email(sender, **kwargs):
         return
 
     context = dict(
-            claim_url = create_claim_url(smart_bytes(kwargs['assertionUrl']))
+            claim_url = create_claim_url(smart_bytes(kwargs['assertionUrl'])),
             )
     context.update(kwargs)
 

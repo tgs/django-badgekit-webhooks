@@ -1,4 +1,7 @@
 import base64
+import requests
+from django.conf import settings
+
 
 # From Django 1.6 - not present in 1.4.  django.utils.http.urlsafe_...
 def urlsafe_base64_encode(s):
@@ -7,6 +10,7 @@ def urlsafe_base64_encode(s):
     equal signs.
     """
     return base64.urlsafe_b64encode(s).rstrip(b'\n=')
+
 
 def urlsafe_base64_decode(s):
     """
@@ -24,3 +28,6 @@ decode_param = urlsafe_base64_decode
 encode_param = urlsafe_base64_encode
 
 
+def get_image_for_assertion(assertion_url):
+    "Given a badge assertion URL, return an image for that assertion."
+    return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
