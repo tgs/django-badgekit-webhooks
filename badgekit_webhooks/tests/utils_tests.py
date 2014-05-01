@@ -19,7 +19,7 @@ class ClaimImageTest(TestCase):
         with self.settings(BADGEKIT_DEFAULT_BADGE_IMAGE=default_url):
             httpretty.register_uri(httpretty.GET,
                     re.compile('example.com/.*'),
-                    body=u'!this ain\'t json')
+                    body='!this ain\'t json')
             url = utils.get_image_for_assertion('http://example.com/assertion.json')
 
             self.assertEqual(url, default_url)
