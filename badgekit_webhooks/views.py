@@ -66,17 +66,23 @@ def badge_issued_hook(request):
 
     try:
         data = json.loads(request.body.decode(request.encoding or 'utf-8'))
-        expected_keys = set(['action', 'uid', 'email', 'assertionUrl', 'issuedOn'])
+        # TODO: there is more than one webhook now, check 'action' = 'award'
+        if 'action' in data:
+            del data['action']
+
+        expected_keys = set(['uid', 'email', 'assertionUrl', 'issuedOn'])
         if type(data) != dict:
             return HttpResponseBadRequest("Not a JSON object.")
-        if set(data.keys()) != expected_keys:
-            logger.warning("Bad json request. wanted=%s, got=%s", repr(expected_keys), repr(set(data.keys())))
-            return HttpResponseBadRequest("Unexpected or Missing Fields.")
+        if expected_keys != set(data.keys()):
+            logger.warning("Got a weird set of keys. wanted=%s, got=%s", repr(expected_keys), repr(set(data.keys())))
+        if expected_keys - set(data.keys()):
+            return HttpResponseBadRequest("Missing required JSON field.")
 
         data['issuedOn'] = datetime.datetime.fromtimestamp(data['issuedOn'])
-        del data['action']
 
-        obj = models.BadgeInstanceNotification.objects.create(**data)
+        obj = models.BadgeInstanceNotification()
+        for key in expected_keys:
+            setattr(obj, key, data[key])
         obj.full_clean() # throws ValidationError if fields are bad.
         obj.save()
 
