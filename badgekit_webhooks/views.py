@@ -70,8 +70,8 @@ def badge_issued_hook(request):
         if type(data) != dict:
             return HttpResponseBadRequest("Not a JSON object.")
         if set(data.keys()) != expected_keys:
-            return HttpResponseBadRequest("Unexpected or Missing Fields.  Got %s but expected %s."
-                    % map(repr, [set(data.keys()), expected_keys]))
+            logger.warning("Bad json request. wanted=%s, got=%s", repr(expected_keys), repr(set(data.keys())))
+            return HttpResponseBadRequest("Unexpected or Missing Fields.")
 
         data['issuedOn'] = datetime.datetime.fromtimestamp(data['issuedOn'])
         del data['action']
