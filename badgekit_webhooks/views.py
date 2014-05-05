@@ -67,8 +67,11 @@ def badge_issued_hook(request):
     try:
         data = json.loads(request.body.decode(request.encoding or 'utf-8'))
         expected_keys = set(['action', 'uid', 'email', 'assertionUrl', 'issuedOn'])
-        if type(data) != dict or set(data.keys()) != expected_keys:
-            return HttpResponseBadRequest("Unexpected or Missing Fields")
+        if type(data) != dict:
+            return HttpResponseBadRequest("Not a JSON object.")
+        if set(data.keys()) != expected_keys:
+            return HttpResponseBadRequest("Unexpected or Missing Fields.  Got %s but expected %s."
+                    % map(repr, [set(data.keys()), expected_keys]))
 
         data['issuedOn'] = datetime.datetime.fromtimestamp(data['issuedOn'])
         del data['action']
