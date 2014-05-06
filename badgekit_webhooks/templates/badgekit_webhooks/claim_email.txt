@@ -1,6 +1,9 @@
-You got this assertion:
+Hi!
 
-{{ assertionUrl }}
+Congratulations!  You have been awarded a digital badge in recognition for your
+contributions to Open edX.  You can go to the URL below to claim your badge,
+and show it off to the world.
 
-To claim it, go to {{ claim_url }}
+{{ claim_url }}
 
+Thanks for your work!
