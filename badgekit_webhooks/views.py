@@ -122,7 +122,7 @@ def send_claim_email(sender, **kwargs):
         logger.warning('Not sending e-mail to a badge earner, because settings.BADGEKIT_SEND_CLAIM_EMAILS is False')
         return
 
-    logger.debug('Sending e-mail to a badge earner')
+    logger.info('Sending e-mail to badge earner %s', kwargs['email'])
     abs_url = sender.build_absolute_uri(
             create_claim_url(smart_bytes(kwargs['assertionUrl'])))
     context = {
