@@ -86,7 +86,7 @@ def badge_issued_hook(request):
         obj.full_clean() # throws ValidationError if fields are bad.
         obj.save()
 
-        models.badge_instance_issued.send(obj, **data)
+        models.badge_instance_issued.send(request, **data)
     except (ValueError, TypeError, ValidationError) as e:
         return HttpResponseBadRequest("Bad JSON request: %s" % str(e))
 
@@ -98,6 +98,7 @@ class InstanceListView(ListView):
 
 
 def create_claim_url(assertionUrl):
+    "Creates a RELATIVE URL.  You could use request.build_absolute_uri() then."
     return reverse('badgekit_webhooks.views.claim_page',
             args=[utils.encode_param(assertionUrl)])
 
@@ -115,14 +116,17 @@ def claim_page(request, b64_assertion_url):
 
 
 # 'sender' here is a Django signal sender, not an e-mail sender.
+# In this case, it must be a Request object.
 def send_claim_email(sender, **kwargs):
     if not settings.BADGEKIT_SEND_CLAIM_EMAILS:
         logger.warning('Not sending e-mail to a badge earner, because settings.BADGEKIT_SEND_CLAIM_EMAILS is False')
         return
 
     logger.debug('Sending e-mail to a badge earner')
+    abs_url = sender.build_absolute_uri(
+            create_claim_url(smart_bytes(kwargs['assertionUrl'])))
     context = {
-            'claim_url': create_claim_url(smart_bytes(kwargs['assertionUrl'])),
+            'claim_url': abs_url,
             }
     context.update(kwargs)
 
