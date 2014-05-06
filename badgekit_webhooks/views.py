@@ -132,7 +132,7 @@ def send_claim_email(sender, **kwargs):
 
     text_message = render_to_string('badgekit_webhooks/claim_email.txt', context)
     email = EmailMessage("You've earned a badge!", text_message,
-            'from@example.com', [kwargs['email']])
+            settings.DEFAULT_FROM_EMAIL, [kwargs['email']])
 
     email.send()
 
