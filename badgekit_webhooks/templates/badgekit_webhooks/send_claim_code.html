@@ -1,10 +1,4 @@
-{% extends "site_base.html" %}
-
-{% load staticfiles %}
-
-{% block extra_head %}
-  <link rel="stylesheet" type="text/css" href="{% static "badgekit_webhooks/app.css" %}">
-{% endblock %}
+{% extends "badgekit_webhooks/app_base.html" %}
 
 {% block body %}
   <h1>Issue a badge</h1>

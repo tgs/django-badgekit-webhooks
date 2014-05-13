@@ -1,10 +1,7 @@
-{% extends "site_base.html" %}
+{% extends "badgekit_webhooks/app_base.html" %}
 
-{% load staticfiles %}
-
-{% block extra_head %}
+{% block extra_script %}
 <script src="https://backpack.openbadges.org/issuer.js"></script>
-<link rel="stylesheet" type="text/css" href="{% static "badgekit_webhooks/app.css" %}">
 {% endblock %}
 
 {% block body %}
