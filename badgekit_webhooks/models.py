@@ -108,3 +108,9 @@ class Badge(object):
     def form_choices():
         badges = _bkapi.list('badge', **_bkapi_kwargs)
         return [(b['slug'], b['name']) for b in badges['badges']]
+
+    @staticmethod
+    def create_claim_code(badge_slug, email):
+        response = _bkapi.create('codes/random', {'email': email},
+                badge=badge_slug, **_bkapi_kwargs)
+        return response['claimCode']['code']
