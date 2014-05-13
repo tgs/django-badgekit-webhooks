@@ -29,6 +29,7 @@ setup(
         "pyjwt",
         "django-appconf",
         "requests",
+        "badgekit-api-client>=0.2",
     ],
     test_suite="runtests.runtests",
     classifiers=[
