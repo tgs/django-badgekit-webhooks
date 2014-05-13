@@ -70,9 +70,10 @@ def badge_issued_hook(request):
             logger.warning('Webhook request was valid JSON, but not an object. ???')
             return HttpResponseBadRequest("Not a JSON object.")
 
-        # TODO: there is more than one webhook now, check 'action' = 'award'
-        if 'action' in data:
-            del data['action']
+        if data['action'] != 'award':
+            # we don't do anything yet with other actions.
+            return HttpResponse(json.dumps({'status': "ok but I didn't do anything"}),
+                    content_type="application/json")
 
         needed_keys = set(['uid', 'email', 'assertionUrl', 'issuedOn'])
         got_keys = set(data.keys())
@@ -90,7 +91,7 @@ def badge_issued_hook(request):
         obj.save()
 
         models.badge_instance_issued.send(request, **data)
-    except (ValueError, TypeError, ValidationError) as e:
+    except (ValueError, KeyError, TypeError, ValidationError) as e:
         logging.exception("Webhook: bad JSON request.")
         return HttpResponseBadRequest("Bad JSON request: %s" % str(e))
 
