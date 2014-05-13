@@ -4,6 +4,7 @@ import django.dispatch
 from django.conf import settings
 from appconf import AppConf
 from django.templatetags.static import static
+from badgekit.api import BadgeKitAPI
 
 
 class BadgekitWebhooksAppConf(AppConf):
@@ -47,8 +48,43 @@ class BadgekitWebhooksAppConf(AppConf):
     This image is shown on the badge claim page if the real badge is inaccessible.
     """
 
+    API_KEY = None
+    """
+    The secret key with which to sign requests to the
+    BadgeKit API server.  This is probably the "master secret"
+    from the environment of the server.
+    """
+
+    API_URL = None
+    """
+    The base URL of the BadgeKit API server.  For example, when
+    testing, this might be `http://localhost:8080/`.
+    """
+
+    SYSTEM = None
+    """
+    The 'system' slug to use with the Badgekit API
+    """
+
+    ISSUER = None
+    """
+    The 'issuer' slug to use with the Badgekit API
+    """
+
+    PROGRAM = None
+    "The 'program' slug to use with the Badgekit API"
+
     class Meta:
         prefix = 'badgekit'
+
+
+_bkapi = BadgeKitAPI(settings.BADGEKIT_API_URL,
+        settings.BADGEKIT_API_KEY)
+_bkapi_kwargs = {
+        'system': settings.BADGEKIT_SYSTEM,
+        'issuer': settings.BADGEKIT_ISSUER,
+        'program': settings.BADGEKIT_PROGRAM,
+        }
 
 
 class BadgeInstanceNotification(models.Model):
@@ -65,3 +101,10 @@ class BadgeInstanceNotification(models.Model):
 
 badge_instance_issued = django.dispatch.Signal(
         providing_args=['uid', 'email', 'assertionUrl', 'issuedOn'])
+
+
+class Badge(object):
+    @staticmethod
+    def form_choices():
+        badges = _bkapi.list('badge', **_bkapi_kwargs)
+        return [(b['slug'], b['name']) for b in badges['badges']]

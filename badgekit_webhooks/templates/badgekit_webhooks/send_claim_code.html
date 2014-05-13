@@ -1,0 +1,22 @@
+{% extends "site_base.html" %}
+
+{% load staticfiles %}
+
+{% block extra_head %}
+  <link rel="stylesheet" type="text/css" href="{% static "badgekit_webhooks/app.css" %}">
+{% endblock %}
+
+{% block body %}
+  <h1>Issue a badge</h1>
+
+  <div>
+    <p>Use this form to send an e-mail to someone, allowing them to claim a badge.
+    This process will use a claim code, so they will be able to claim the badge
+    at a different e-mail address than you send it to.</p>
+
+    <form action="" method="post">{% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" value="Send message" />
+    </form>
+  </div>
+{% endblock %}
