@@ -46,7 +46,7 @@ class IssuePageTest(TestCase):
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 503)
             self.assertTemplateUsed('badgekit_webhooks/badgekit_error.html')
-            self.assertTrue('connection' in resp.content.lower())
+            self.assertTrue('connection' in resp.content.decode('utf-8').lower())
 
     def testGracefulBadBadgeAPI(self):
         # Mock the badge list: invalidly this time
@@ -63,4 +63,4 @@ class IssuePageTest(TestCase):
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 503)
             self.assertTemplateUsed('badgekit_webhooks/badgekit_error.html')
-            self.assertTrue('json' in resp.content.lower())
+            self.assertTrue('json' in resp.content.decode('utf-8').lower())
