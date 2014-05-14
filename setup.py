@@ -29,6 +29,7 @@ setup(
         "pyjwt",
         "django-appconf",
         "requests",
+        "django_inlinecss",
     ],
     test_suite="runtests.runtests",
     classifiers=[
