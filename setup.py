@@ -22,9 +22,13 @@ setup(
     packages=find_packages(),
     tests_require=[
         "Django>=1.4",
+        'httpretty',
+        "django-nose",
     ],
     install_requires=[
         "pyjwt",
+        "django-appconf",
+        "requests",
     ],
     test_suite="runtests.runtests",
     classifiers=[

@@ -7,14 +7,6 @@ import hashlib
 import contextlib
 
 
-from .claim_tests import *
-
-
-class Tests(TestCase):
-    def testHello(self):
-        resp = self.client.get('/hello/')
-        self.assertEqual(resp.status_code, 200)
-
 hook_demo_data = '''{
     "action": "award",
     "uid": "asdf1234",
@@ -26,6 +18,12 @@ hook_demo_data = '''{
 hook_demo_obj = json.loads(hook_demo_data)
 
 hook_url = reverse('badge_issued_hook')
+
+
+class HelloTest(TestCase):
+    def testHello(self):
+        url = reverse('badgekit_webhooks_hello')
+        self.client.get(url)
 
 
 class CatchingSignal(object):
@@ -85,6 +83,15 @@ class HookTests(TestCase):
                         content_type="application/json")
             self.assertEqual(resp.status_code, 200)
 
+    def testGoodRequestWithExtraFields(self):
+        data = {'extrafield': 'stuff'}
+        data.update(hook_demo_obj)
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                    data=json.dumps(data),
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 200)
+
     def testRejectBadFields(self):
         with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
             resp = self.client.post(hook_url,
@@ -129,6 +136,13 @@ class JWTTests(TestCase):
                     content_type="application/json")
         self.assertEqual(resp.status_code, 401)
 
+    def testRejectBadHeader(self):
+        resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION="Jwt tOkEn= blah")
+        self.assertEqual(resp.status_code, 403)
+
     def testNoBodySig(self):
         key = 'JWT key for testing'
         with self.settings(BADGEKIT_JWT_KEY=key):
@@ -137,6 +151,26 @@ class JWTTests(TestCase):
                     content_type="application/json",
                     HTTP_AUTHORIZATION=(
                         make_jwt_header(jwt.encode({'something': 'hi'}, key=key))))
+            self.assertEqual(resp.status_code, 403)
+
+    def testBadBodySig(self):
+        key = 'JWT key for testing'
+        with self.settings(BADGEKIT_JWT_KEY=key):
+            resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION=(
+                        make_jwt_header(jwt.encode(
+                            {
+                                'body': {
+                                    'alg': 'sha256',
+                                    'hash': hashlib.sha256(
+                                            (hook_demo_data + 'extra stuff, sig no match').encode('utf-8')
+                                        ).hexdigest(),
+                                    }
+                                },
+                            key=key,
+                                ))))
             self.assertEqual(resp.status_code, 403)
 
     def testSuccess(self):
@@ -154,6 +188,21 @@ class JWTTests(TestCase):
                                     hook_demo_data.encode('utf-8')).hexdigest(),
                         }}, key=key))))
             self.assertEqual(resp.status_code, 200, resp.content)
+
+    def testRejectWithNoKey(self):
+        with self.settings(BADGEKIT_JWT_KEY=None):
+            resp = self.client.post(hook_url,
+                    data=hook_demo_data,
+                    content_type="application/json",
+                    HTTP_AUTHORIZATION=(
+                        make_jwt_header(jwt.encode(
+                        {
+                            'body': {
+                                'alg': 'sha256',
+                                'hash': hashlib.sha256(
+                                    hook_demo_data.encode('utf-8')).hexdigest(),
+                        }}, key='some key'))))
+            self.assertEqual(resp.status_code, 403, resp.content)
 
 
 class SignalTest(TestCase):

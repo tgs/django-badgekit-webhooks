@@ -12,6 +12,8 @@ DEFAULT_SETTINGS = dict(
         "django.contrib.auth",
         "django.contrib.contenttypes",
         "django.contrib.sites",
+        "django.contrib.staticfiles",
+        "django_nose",
         "badgekit_webhooks",
         "badgekit_webhooks.tests"
     ],
@@ -21,6 +23,7 @@ DEFAULT_SETTINGS = dict(
             "NAME": ":memory:",
         }
     },
+    STATIC_URL="/static/",
     SITE_ID=1,
     ROOT_URLCONF="badgekit_webhooks.tests.urls",
     SECRET_KEY="notasecret",
@@ -31,6 +34,8 @@ def runtests(*test_args):
     if not settings.configured:
         settings.configure(**DEFAULT_SETTINGS)
 
+    # Allow AppConf to inject its settings
+    import badgekit_webhooks.models
     # Compatibility with Django 1.7's stricter initialization
     if hasattr(django, "setup"):
         django.setup()
@@ -41,14 +46,7 @@ def runtests(*test_args):
             os.path.join(parent, 'badgekit_webhooks/tests/templates'),
             )
 
-    try:
-        from django.test.simple import DjangoTestSuiteRunner as TestRunner
-        if not test_args:
-            test_args = ["tests"]
-    except ImportError:
-        from django.test.runner import DiscoverRunner as TestRunner
-        if not test_args:
-            test_args = ["badgekit_webhooks.tests"]
+    from django_nose import NoseTestSuiteRunner as TestRunner
 
     failures = TestRunner(
         verbosity=1, interactive=True, failfast=False).run_tests(test_args)

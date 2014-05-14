@@ -13,6 +13,8 @@ env:
   - DJANGO=Django==1.4.11
 
 install:
+  # For the moment, released django-nose does not work with Django@master.
+  - pip install git+git://github.com/brad/django-nose@django_1.7
   - pip install $DJANGO --use-mirrors
   - pip install flake8 --use-mirrors
   - pip install coverage coveralls --use-mirrors

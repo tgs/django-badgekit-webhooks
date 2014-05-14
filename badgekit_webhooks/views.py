@@ -5,40 +5,19 @@ import datetime
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.core.exceptions import ValidationError
+from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
+from django.template.loader import render_to_string
+from django.utils.encoding import smart_bytes
 from . import models
 import json
 import jwt
 import hashlib
 import logging
 from django.core.urlresolvers import reverse
-import base64
-
-
-# From Django 1.6 - not present in 1.4.  django.utils.http.urlsafe_...
-def urlsafe_base64_encode(s):
-    """
-    Encodes a bytestring in base64 for use in URLs, stripping any trailing
-    equal signs.
-    """
-    return base64.urlsafe_b64encode(s).rstrip(b'\n=')
-
-def urlsafe_base64_decode(s):
-    """
-    Decodes a base64 encoded string, adding back any trailing equal signs that
-    might have been stripped.
-    """
-    s = s.encode('utf-8') # base64encode should only return ASCII.
-    try:
-        return base64.urlsafe_b64decode(s.ljust(len(s) + len(s) % 4, b'='))
-    except (LookupError, BinasciiError) as e:
-        raise ValueError(e)
-
-
-decode_param = urlsafe_base64_decode
-encode_param = urlsafe_base64_encode
+from . import utils
 
 
 logger = logging.getLogger(__name__)
@@ -48,12 +27,8 @@ def hello(request):
     return HttpResponse("Hello, world.  Badges!!!")
 
 
-def should_skip_jwt_auth():
-    return getattr(settings, 'BADGEKIT_SKIP_JWT_AUTH', False)
-
-
 def get_jwt_key():
-    key = getattr(settings, 'BADGEKIT_JWT_KEY', None)
+    key = settings.BADGEKIT_JWT_KEY
     if not key:
         logger.error('Got a webhook request, but no BADGEKIT_JWT_KEY configured! Rejecting.')
         raise jwt.DecodeError('No JWT Key')
@@ -66,13 +41,13 @@ auth_header_re = re.compile(r'JWT token="([0-9A-Za-z-_.]+)"')
 @require_POST
 @csrf_exempt
 def badge_issued_hook(request):
-    if not should_skip_jwt_auth():
+    if not settings.BADGEKIT_SKIP_JWT_AUTH:
         auth_header = request.META.get('HTTP_AUTHORIZATION', '')
         if not auth_header:
             return HttpResponse('JWT auth required', status=401)
         match = auth_header_re.match(auth_header)
         if not match:
-            logging.info("Bad auth header: <<%s>>" % repr(auth_header))
+            logger.info("Bad auth header: <<%s>>" % repr(auth_header))
             return HttpResponse('Malformed Authorization header', status=403)
 
         auth_token = match.group(1)
@@ -82,29 +57,42 @@ def badge_issued_hook(request):
             body_sig = payload['body']['hash']
             # Assuming sha256 for now.
             if body_sig != hashlib.sha256(request.body).hexdigest():
-                # Timing attack shouldn't matter: attacker can see the sig anyway.
+                logger.warning("Bad JWT signature on webhook body")
                 return HttpResponse('Bad body signature', status=403)
-            # TODO: test method, etc.
 
         except (jwt.DecodeError, KeyError):
-            #logging.exception('Bad JWT auth')
+            logger.exception('Bad JWT auth')
             return HttpResponse('Bad JWT auth', status=403)
 
     try:
         data = json.loads(request.body.decode(request.encoding or 'utf-8'))
-        expected_keys = set(['action', 'uid', 'email', 'assertionUrl', 'issuedOn'])
-        if type(data) != dict or set(data.keys()) != expected_keys:
-            return HttpResponseBadRequest("Unexpected or Missing Fields")
+        if type(data) != dict:
+            logger.warning('Webhook request was valid JSON, but not an object. ???')
+            return HttpResponseBadRequest("Not a JSON object.")
+
+        if data['action'] != 'award':
+            # we don't do anything yet with other actions.
+            return HttpResponse(json.dumps({'status': "ok but I didn't do anything"}),
+                    content_type="application/json")
+
+        needed_keys = set(['uid', 'email', 'assertionUrl', 'issuedOn'])
+        got_keys = set(data.keys())
+        missing_keys = needed_keys - got_keys
+        if missing_keys:
+            logger.warning('Missing necessary keys from webhook: %s', repr(missing_keys))
+            return HttpResponseBadRequest("Missing required JSON field(s).")
 
         data['issuedOn'] = datetime.datetime.fromtimestamp(data['issuedOn'])
-        del data['action']
 
-        obj = models.BadgeInstanceNotification.objects.create(**data)
+        obj = models.BadgeInstanceNotification()
+        for key in needed_keys:
+            setattr(obj, key, data[key])
         obj.full_clean() # throws ValidationError if fields are bad.
         obj.save()
 
-        models.badge_instance_issued.send_robust(obj, **data)
-    except (ValueError, TypeError, ValidationError) as e:
+        models.badge_instance_issued.send(request, **data)
+    except (ValueError, KeyError, TypeError, ValidationError) as e:
+        logging.exception("Webhook: bad JSON request.")
         return HttpResponseBadRequest("Bad JSON request: %s" % str(e))
 
     return HttpResponse(json.dumps({"status": "ok"}), content_type="application/json")
@@ -115,15 +103,43 @@ class InstanceListView(ListView):
 
 
 def create_claim_url(assertionUrl):
+    "Creates a RELATIVE URL.  You could use request.build_absolute_uri() then."
     return reverse('badgekit_webhooks.views.claim_page',
-            args=[encode_param(assertionUrl)])
+            args=[utils.encode_param(assertionUrl)])
 
 
 def claim_page(request, b64_assertion_url):
-    assertionUrl = decode_param(b64_assertion_url)
-    # TODO might want to validate the URL against a whitelist - there might be
-    # no security issue, but it makes me uneasy not to...
+    # The URL should be ASCII encoded: only IRIs use higher Unicode chars.  Right????
+    assertionUrl = utils.decode_param(b64_assertion_url).decode('ascii')
+
+    # TODO validate the URL against a whitelist
 
     return render(request, 'badgekit_webhooks/claim_page.html', {
         'assertionUrl': assertionUrl,
+        'badge_image': utils.get_image_for_assertion(assertionUrl),
         })
+
+
+# 'sender' here is a Django signal sender, not an e-mail sender.
+# In this case, it must be a Request object.
+def send_claim_email(sender, **kwargs):
+    if not settings.BADGEKIT_SEND_CLAIM_EMAILS:
+        logger.warning('Not sending e-mail to a badge earner, because settings.BADGEKIT_SEND_CLAIM_EMAILS is False')
+        return
+
+    logger.info('Sending e-mail to badge earner %s', kwargs['email'])
+    abs_url = sender.build_absolute_uri(
+            create_claim_url(smart_bytes(kwargs['assertionUrl'])))
+    context = {
+            'claim_url': abs_url,
+            }
+    context.update(kwargs)
+
+    text_message = render_to_string('badgekit_webhooks/claim_email.txt', context)
+    email = EmailMessage("You've earned a badge!", text_message,
+            settings.DEFAULT_FROM_EMAIL, [kwargs['email']])
+
+    email.send()
+
+
+models.badge_instance_issued.connect(send_claim_email, dispatch_uid='email-sender')

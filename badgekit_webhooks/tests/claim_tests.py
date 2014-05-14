@@ -16,10 +16,9 @@ class ClaimPageTest(TestCase):
         self.assertEqual(resp.status_code, 200)
 
     def testQuotesDoNotAppear(self):
-        url = views.create_claim_url(b"http://evil.com/quote'quote")
+        url = views.create_claim_url(b'http://evil.com/quote"quote')
         resp = self.client.get(url)
-        self.assertFalse(b"quote'quote" in resp.content)
-        self.assertFalse(b"quote&#39;quote" in resp.content)
+        self.assertFalse(b'quote"quote' in resp.content)
 
     def testBracketsDoNotAppear(self):
         url = views.create_claim_url(b"http://evil.com/angle<angle>angle")
@@ -30,5 +29,4 @@ class ClaimPageTest(TestCase):
     def testMoreChars(self):
         url = views.create_claim_url(b"http://evil.com/semi;dquote\"")
         resp = self.client.get(url)
-        self.assertFalse(b'semi;' in resp.content)
         self.assertFalse(b'dquote"' in resp.content)

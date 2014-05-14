@@ -1,13 +1,56 @@
 {% extends "site_base.html" %}
 
+{% load staticfiles %}
+
 {% block extra_head %}
-  <script src="https://backpack.openbadges.org/issuer.js"></script>
+<script src="https://backpack.openbadges.org/issuer.js"></script>
+<link rel="stylesheet" type="text/css" href="{% static "badgekit_webhooks/app.css" %}">
 {% endblock %}
 
 {% block body %}
-  <h2>Claim your badge!</h2>
+  <div class="alert alert-success">
+    <strong>Well done!</strong> You earned a badge. Now you can add it to your backpack.
+  </div>
 
-  <a href="javascript:OpenBadges.issue(['{{ assertionUrl|escapejs }}']);">
-    CLICK HERE TO CLAIM THAT BADGE
-  </a>
+  <div class="jumbotron">
+    <h1>You've earned a badge.</h1>
+
+    <p class="lead">Claim your rightful place among the noble, the steadfast, and the brave: the fellowship of edX code contributors.</p>
+
+    <p class="badge-image">
+      <img src="{{ badge_image }}">
+    </p>
+
+    <p><a class="btn btn-lg btn-success" href="javascript:issueBadge();" role="button">Send to backpack</a></p>
+  </div>
+
+  <div class="row marketing">
+    <div class="col-lg-6">
+      <h4>About edX badges</h4>
+      <p><a href="">Read all about</a> edX's commitment to open badges.</p>
+    </div>
+
+    <div class="col-lg-6">
+      <h4>Criteria for this badge</h4>
+      <p>Others can do one of <a href="#">these awesome tasks</a> to join you in earning this badge.</p>
+    </div>
+
+  </div>
+
+  <div class="alert alert-info">
+    If this is a real claim page, the assertion for the badge instance lives
+    <a id="assertionUrl" href="{{ assertionUrl }}">here.</a>
+  </div>
+
+
+  <script>
+    function issueBadge() {
+      var assertionUrl = $('a#assertionUrl').attr('href');
+      OpenBadges.issue([assertionUrl], function(errors, successes) {
+          if (errors) {
+            console.log(errors);
+          }
+      });
+    }
+  </script>
 {% endblock %}
