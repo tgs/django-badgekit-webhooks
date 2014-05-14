@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 from django.conf.urls import patterns, url
 from . import views
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 urlpatterns = patterns(
@@ -10,5 +11,6 @@ urlpatterns = patterns(
         name="badge_issued_hook"),
     url(r"^instances/$", views.InstanceListView.as_view()),
     url(r"^claim/([-A-Za-z0-9_]+)/$", 'badgekit_webhooks.views.claim_page'),
-    url(r"^issue/$", views.SendClaimCodeView.as_view()),
+    url(r"^issue/$", staff_member_required(views.SendClaimCodeView.as_view()),
+        name="badge_issue_form"),
     )
