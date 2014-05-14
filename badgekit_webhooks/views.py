@@ -69,30 +69,33 @@ def badge_issued_hook(request):
 
     try:
         data = json.loads(request.body.decode(request.encoding or 'utf-8'))
+        if type(data) != dict:
+            logger.warning('Webhook request was valid JSON, but not an object. ???')
+            return HttpResponseBadRequest("Not a JSON object.")
+
         if data['action'] != 'award':
             # we don't do anything yet with other actions.
             return HttpResponse(json.dumps({'status': "ok but I didn't do anything"}),
                     content_type="application/json")
 
-        expected_keys = set(['uid', 'email', 'assertionUrl', 'issuedOn'])
-        if type(data) != dict:
-            return HttpResponseBadRequest("Not a JSON object.")
-        if expected_keys != set(data.keys()):
-            logger.warning("Got a weird set of keys. wanted=%s, got=%s",
-                    repr(expected_keys), repr(set(data.keys())))
-        if expected_keys - set(data.keys()):
-            return HttpResponseBadRequest("Missing required JSON field.")
+        needed_keys = set(['uid', 'email', 'assertionUrl', 'issuedOn'])
+        got_keys = set(data.keys())
+        missing_keys = needed_keys - got_keys
+        if missing_keys:
+            logger.warning('Missing necessary keys from webhook: %s', repr(missing_keys))
+            return HttpResponseBadRequest("Missing required JSON field(s).")
 
         data['issuedOn'] = datetime.datetime.fromtimestamp(data['issuedOn'])
 
         obj = models.BadgeInstanceNotification()
-        for key in expected_keys:
+        for key in needed_keys:
             setattr(obj, key, data[key])
         obj.full_clean() # throws ValidationError if fields are bad.
         obj.save()
 
         models.badge_instance_issued.send(request, **data)
     except (ValueError, KeyError, TypeError, ValidationError) as e:
+        logging.exception("Webhook: bad JSON request.")
         return HttpResponseBadRequest("Bad JSON request: %s" % str(e))
 
     return HttpResponse(json.dumps({"status": "ok"}), content_type="application/json")
