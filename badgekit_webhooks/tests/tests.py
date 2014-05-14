@@ -83,6 +83,15 @@ class HookTests(TestCase):
                         content_type="application/json")
             self.assertEqual(resp.status_code, 200)
 
+    def testGoodRequestWithExtraFields(self):
+        data = {'extrafield': 'stuff'}
+        data.update(hook_demo_obj)
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                    data=json.dumps(data),
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 200)
+
     def testRejectBadFields(self):
         with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
             resp = self.client.post(hook_url,
