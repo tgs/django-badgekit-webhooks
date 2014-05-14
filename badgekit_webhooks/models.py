@@ -78,8 +78,10 @@ class BadgekitWebhooksAppConf(AppConf):
         prefix = 'badgekit'
 
 
-_bkapi = BadgeKitAPI(settings.BADGEKIT_API_URL,
+def get_badgekit_api():
+    return BadgeKitAPI(settings.BADGEKIT_API_URL,
         settings.BADGEKIT_API_KEY)
+
 _bkapi_kwargs = {
         'system': settings.BADGEKIT_SYSTEM,
         'issuer': settings.BADGEKIT_ISSUER,
@@ -106,11 +108,11 @@ badge_instance_issued = django.dispatch.Signal(
 class Badge(object):
     @staticmethod
     def form_choices():
-        badges = _bkapi.list('badge', **_bkapi_kwargs)
+        badges = get_badgekit_api().list('badge', **_bkapi_kwargs)
         return [(b['slug'], b['name']) for b in badges['badges']]
 
     @staticmethod
     def create_claim_code(badge_slug, email):
-        response = _bkapi.create('codes/random', {'email': email},
+        response = get_badgekit_api().create('codes/random', {'email': email},
                 badge=badge_slug, **_bkapi_kwargs)
         return response['claimCode']['code']
