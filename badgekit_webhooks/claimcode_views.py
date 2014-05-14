@@ -6,12 +6,25 @@ from .forms import SendClaimCodeForm
 from .models import Badge
 from badgekit import RequestException, BadgeKitException
 from django.contrib.admin.views.decorators import staff_member_required
+import logging as __logging
+
+logger = __logging.getLogger(__name__)
 
 # This view starts as a copy of django.views.generic.edit.ProcessFormView
 class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
     template_name = 'badgekit_webhooks/send_claim_code.html'
     form_class = SendClaimCodeForm
     success_url = '/' # TODO
+
+    def render_badgekit_error(self, request, exception, message=None):
+        logger.warning("Problem with badgekit: %s" % exception)
+        return render(request,
+                'badgekit_webhooks/badgekit_error.html',
+                {
+                    'exception': exception,
+                    'message': message,
+                },
+                status=503)
 
     def get(self, request, *args, **kwargs):
         """
@@ -24,9 +37,7 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
             form.fields['badge'].choices = self.get_badge_choices()
             return self.render_to_response(self.get_context_data(form=form))
         except (RequestException, BadgeKitException) as e:
-            return render(request,
-                    'badgekit_webhooks/badgekit_error.html',
-                    { 'exception': e })
+            return self.render_badgekit_error(request, e)
 
     def post(self, request, *args, **kwargs):
         """
@@ -39,9 +50,8 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         try:
             form.fields['badge'].choices = self.get_badge_choices()
         except (RequestException, BadgeKitException) as e:
-            return render(request,
-                    'badgekit_webhooks/badgekit_error.html',
-                    { 'exception': e })
+            return self.render_badgekit_error(request, e,
+                    message='No e-mail was sent.')
 
         if form.is_valid():
             return self.form_valid(form)
@@ -54,7 +64,11 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         return self.post(*args, **kwargs)
 
     def form_valid(self, form):
-        self.send_claim_mail(form)
+        try:
+            self.send_claim_mail(form)
+        except (RequestException, BadgeKitException) as e:
+            return self.render_badgekit_error(request, e)
+
         return super(SendClaimCodeView, self).form_valid(form)
 
     def get_badge_choices(self):
