@@ -1,8 +1,11 @@
 from __future__ import unicode_literals
 from django.views.generic.edit import FormMixin
 from django.views.generic.base import View, TemplateResponseMixin
+from django.shortcuts import render
 from .forms import SendClaimCodeForm
 from .models import Badge
+from badgekit import RequestException, BadgeKitException
+from django.contrib.admin.views.decorators import staff_member_required
 
 # This view starts as a copy of django.views.generic.edit.ProcessFormView
 class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
@@ -16,7 +19,14 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         """
         form_class = self.get_form_class()
         form = self.get_form(form_class)
-        return self.render_to_response(self.get_context_data(form=form))
+
+        try:
+            form.fields['badge'].choices = self.get_badge_choices()
+            return self.render_to_response(self.get_context_data(form=form))
+        except (RequestException, BadgeKitException) as e:
+            return render(request,
+                    'badgekit_webhooks/badgekit_error.html',
+                    { 'exception': e })
 
     def post(self, request, *args, **kwargs):
         """
@@ -25,6 +35,14 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         """
         form_class = self.get_form_class()
         form = self.get_form(form_class)
+
+        try:
+            form.fields['badge'].choices = self.get_badge_choices()
+        except (RequestException, BadgeKitException) as e:
+            return render(request,
+                    'badgekit_webhooks/badgekit_error.html',
+                    { 'exception': e })
+
         if form.is_valid():
             return self.form_valid(form)
         else:
@@ -38,6 +56,9 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
     def form_valid(self, form):
         self.send_claim_mail(form)
         return super(SendClaimCodeView, self).form_valid(form)
+
+    def get_badge_choices(self):
+        return Badge.form_choices()
 
     def send_claim_mail(self, form):
         # if the code doesn't work, tell the admin so?

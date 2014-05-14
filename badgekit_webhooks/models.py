@@ -4,7 +4,7 @@ import django.dispatch
 from django.conf import settings
 from appconf import AppConf
 from django.templatetags.static import static
-from badgekit.api import BadgeKitAPI
+from badgekit import BadgeKitAPI
 
 
 class BadgekitWebhooksAppConf(AppConf):
