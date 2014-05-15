@@ -1,5 +1,5 @@
-<!--{% load inlinecss %}
-{% inlinecss "static/css/email.css" %}-->
+{% load inlinecss %}
+{% inlinecss "css/email.css" %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width" />
 
 <!--remove once inlined -->
-<link rel="stylesheet" href="../../../static/css/email.css" type="text/css">
+<!-- <link rel="stylesheet" href="../../static/css/email.css" type="text/css"> -->
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Badge Awarded</title>
@@ -26,8 +26,8 @@
 				<div class="content">
 					<table bgcolor="#f8f8f8">
 					<tr>
-						<td><img src="http://placehold.it/200x30/" /></td>
-						<td align="right"><h6 class="collapse">{% organization }</h6></td>
+						<td><img src="http://placekitten.com/200/30" /></td>
+						<td align="right"><h6 class="collapse">{{ organization }}</h6></td>
 					</tr>
 				</table>
 				</div>
@@ -50,19 +50,19 @@
 					<td>
 						
 						<h3>Cheers!</h3>
-						<p class="lead">You've earned a badge from {% organization }:</p>
+						<p class="lead">You've earned a badge from {{ organization }}:</p>
 						
 						<!-- Badge image -->
-						<p class="badge-container"><img src="http://placehold.it/300x300" /></p><!-- /hero -->
+						<p class="badge-container"><img src="http://placekitten.com/300/300" /></p><!-- /hero -->
 						
 						<!-- Callout Panel 
 						<p class="callout">
 							Claim your badge and add it to your collection. <a href="#">Claim now &raquo;</a>
 						</p> /Callout Panel -->
 						
-						<h3>{% Badge Title}</h3>
-						<p>{% badge earner description You earned this badge for being particularly awesome. We should be able to pull this from Badgekit-API. }</p>
-						<p class="claim-link"><a class="btn" href="{% claim url }">Claim your badge!</a></p>
+						<h3>{{ badge_name }}</h3>
+						<p>{{ badge_earner_description }}</p>
+						<p class="claim-link"><a class="btn" href="{{ claim_url }}">Claim your badge!</a></p>
 												
 						<br/>
 						<br/>							
@@ -77,9 +77,8 @@
 										<tr>
 											<td>				
 												
-												<h5 class="">Learn more about {%organization} badges:</h5>
-												<p class=""><a href="{% about badges url }" class="">About our badges</a> <br /><a href="http://openbadges.org" class="">About Open Badges</a></p>
-						
+												<h5 class="">Learn more about {{ organization }} badges:</h5>
+												<p class=""><a href="{{ about_program_url }}" class="">About our badges</a> <br /><a href="http://openbadges.org" class="">About Open Badges</a></p>
 												
 											</td>
 										</tr>
@@ -91,9 +90,9 @@
 											<td>				
 																			
 												<h5 class="">Contact Info:</h5>												
-												<p>Email: <strong><a href="emailto:{%contact email}">{% contact email}</a></strong>
+												<p>Email: <strong><a href="emailto:{{contact_email}}">{{ contact_email }}</a></strong>
 												<br/>
-        								Website: <strong><a href="{%siteurl}">{% organization }</a></strong></p>
+        								Website: <strong><a href="{{site_base_url}}">{{ organization }}</a></strong></p>
                 
 											</td>
 										</tr>
@@ -129,7 +128,7 @@
 					<td align="center">
 						<p><small>
 							<!--<a href="#">Privacy</a> | -->
-							<a href="{% unsubscribe link }"><unsubscribe>I don't want to see these notifications</unsubscribe></a>
+							<a href="{{ unsubscribe_link }}"><unsubscribe>I don't want to see these notifications</unsubscribe></a>
 						</small></p>
 					</td>
 				</tr>
@@ -143,3 +142,5 @@
 
 </body>
 </html>
+
+{% endinlinecss %}

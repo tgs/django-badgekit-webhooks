@@ -5,7 +5,7 @@ import datetime
 from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
@@ -132,12 +132,22 @@ def send_claim_email(sender, **kwargs):
             create_claim_url(smart_bytes(kwargs['assertionUrl'])))
     context = {
             'claim_url': abs_url,
+            'organization': 'open edX',
+            'badge_name': 'Open edX Contributor',
+            'badgeclass_image_url': utils.get_image_for_assertion(kwargs['assertionUrl']),
+            'badge_earner_description': 'Contribute to the edX code, which is accomplished most visibly with an accepted pull request on GitHub. The link below WILL NOT WORK, this is coming from my localhost. But check out how responsive this email template is by resizing your viewing window! So response!',
+            'about_program_url': '#',
+            'contact_email': 'contact@example.com',
+            'site_base_url': 'http://localhost:8000',
+            'unsubscribe_link': '#',
             }
     context.update(kwargs)
 
     text_message = render_to_string('badgekit_webhooks/claim_email.txt', context)
-    email = EmailMessage("You've earned a badge!", text_message,
+    
+    email = EmailMultiAlternatives("You've earned a badge!", text_message,
             settings.DEFAULT_FROM_EMAIL, [kwargs['email']])
+    email.attach_alternative(render_to_string('badgekit_webhooks/badge_earned_email.html', context), "text/html")
 
     email.send()
 
