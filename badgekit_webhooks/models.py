@@ -105,6 +105,27 @@ badge_instance_issued = django.dispatch.Signal(
         providing_args=['uid', 'email', 'assertionUrl', 'issuedOn'])
 
 
+class ClaimCode(models.Model):
+    code = models.CharField(max_length=255, primary_key=True)
+    initial_email = models.EmailField(max_length=255)
+    badge = models.CharField(max_length=255) # slug
+    system = models.CharField(max_length=255) # slug
+    issuer = models.CharField(max_length=255, blank=True) # slug
+    program = models.CharField(max_length=255, blank=True) # slug
+
+    def get_info(self):
+        """
+        Get info about the claim code - returns a dict
+        with two fields, 'claimCode' and 'badge'.
+
+        Could also throw exceptions!
+        """
+        api = get_badgekit_api()
+        return api.get(code=self.code, badge=self.badge,
+                system=self.system, issuer=self.issuer,
+                program=self.program)
+
+
 class Badge(object):
     @staticmethod
     def form_choices():

@@ -1,9 +1,10 @@
 from __future__ import unicode_literals
 from django.views.generic.edit import FormMixin
+from django.views.generic.edit import FormView
 from django.views.generic.base import View, TemplateResponseMixin
 from django.shortcuts import render
-from .forms import SendClaimCodeForm
-from .models import Badge
+from . import forms
+from .models import Badge, ClaimCode
 from badgekit import RequestException, BadgeKitException
 from django.contrib.admin.views.decorators import staff_member_required
 import logging as __logging
@@ -13,7 +14,7 @@ logger = __logging.getLogger(__name__)
 # This view starts as a copy of django.views.generic.edit.ProcessFormView
 class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
     template_name = 'badgekit_webhooks/send_claim_code.html'
-    form_class = SendClaimCodeForm
+    form_class = forms.SendClaimCodeForm
     success_url = '/' # TODO
 
     def render_badgekit_error(self, request, exception, message=None):
@@ -81,3 +82,18 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
                 form.cleaned_data['awardee'])
         print(code)
         # TODO: send the code in an email, etc.
+
+
+class ClaimCodeClaimView(View):
+    template_name = 'badgekit_webhooks/claim_code_claim.html'
+    form_class = forms.ClaimCodeClaimForm
+    success_url = '/' # TODO
+
+    def get(self, request, *args, **kwargs):
+        code = args[0]
+        claim_obj = ClaimCode.objects.get(code=code)
+        # if not, then... TODO
+        api_info = claim_obj.get_info()
+        # if not, then... TODO
+        already_claimed = api_info['claimCode']['claimed']
+        return render(request, self.template_name, {'asdf': 'Jkl'})
