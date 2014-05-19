@@ -34,7 +34,7 @@ class IssuePageTest(TestCase):
             url = reverse('badge_issue_form')
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200)
-            self.assertTemplateUsed('badgekit_webhooks/send_claim_code.html')
+            self.assertTemplateUsed(resp, 'badgekit_webhooks/send_claim_code.html')
 
     def testGracefulNoBadgeAPI(self):
         with self.settings(BADGEKIT_API_URL="http://257.0.0.0/", # bad IP address
@@ -45,7 +45,7 @@ class IssuePageTest(TestCase):
             url = reverse('badge_issue_form')
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 503)
-            self.assertTemplateUsed('badgekit_webhooks/badgekit_error.html')
+            self.assertTemplateUsed(resp, 'badgekit_webhooks/badgekit_error.html')
             self.assertTrue('connection' in resp.content.decode('utf-8').lower())
 
     @httpretty.activate
@@ -63,5 +63,5 @@ class IssuePageTest(TestCase):
             url = reverse('badge_issue_form')
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 503)
-            self.assertTemplateUsed('badgekit_webhooks/badgekit_error.html')
+            self.assertTemplateUsed(resp, 'badgekit_webhooks/badgekit_error.html')
             self.assertTrue('json' in resp.content.decode('utf-8').lower())
