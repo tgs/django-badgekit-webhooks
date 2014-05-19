@@ -48,6 +48,7 @@ class IssuePageTest(TestCase):
             self.assertTemplateUsed('badgekit_webhooks/badgekit_error.html')
             self.assertTrue('connection' in resp.content.decode('utf-8').lower())
 
+    @httpretty.activate
     def testGracefulBadBadgeAPI(self):
         # Mock the badge list: invalidly this time
         httpretty.register_uri(httpretty.GET,
