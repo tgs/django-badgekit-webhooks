@@ -83,14 +83,30 @@ class ClaimPageTest(TestCase):
                         'slug': 'excellent-badge'},
                     }
 
-    def setUp(self):
-        obj, created = models.ClaimCode.objects.get_or_create(
-                code='6f1c2410dc', badge='excellent-badge',
-                system='badgekit', initial_email='so2me@example.com')
-        self.assertTrue(obj)
-
     def testReverseUrl(self):
         url = reverse('claimcode_claim', args=['abc1234d'])
+
+    def testGracefulBadClaimCode(self):
+        with self.settings(BADGEKIT_API_URL="http://example.com/",
+                BADGEKIT_API_KEY="secret",
+                BADGEKIT_SYSTEM='bk'):
+            # we don't create the object
+            url = reverse('claimcode_claim', args=['nonexistant-code'])
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 404);
+
+    def testGracefulNoBKAPI(self):
+        with self.settings(BADGEKIT_API_URL="http://257.0.0.0/", # bad IP
+                BADGEKIT_API_KEY="secret",
+                BADGEKIT_SYSTEM='bk'):
+            obj, created = models.ClaimCode.objects.get_or_create(
+                    badge='excellent-badge',
+                    code='6f1c2410dc',
+                    system='badgekit', initial_email='so2me@example.com')
+            self.assertTrue(obj)
+            url = reverse('claimcode_claim', args=['6f1c2410dc'])
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 503);
 
     @httpretty.activate
     def testSuccessfulGet(self):
@@ -101,6 +117,11 @@ class ClaimPageTest(TestCase):
         with self.settings(BADGEKIT_API_URL="http://example.com/",
                 BADGEKIT_API_KEY="secret",
                 BADGEKIT_SYSTEM='bk'):
+            obj, created = models.ClaimCode.objects.get_or_create(
+                    badge='excellent-badge',
+                    code='6f1c2410dc',
+                    system='badgekit', initial_email='so2me@example.com')
+            self.assertTrue(obj)
             url = reverse('claimcode_claim', args=['6f1c2410dc'])
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200);

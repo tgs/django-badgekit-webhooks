@@ -79,10 +79,15 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
 
     def send_claim_mail(self, form):
         # if the code doesn't work, tell the admin so?
-        code = Badge.create_claim_code(
-                form.cleaned_data['badge'],
-                form.cleaned_data['awardee'])
-        print(code)
+        code_obj = ClaimCode(
+                badge=form.cleaned_data['badge'],
+                initial_email=form.cleaned_data['awardee'])
+        print(code_obj.code)
+        print(code_obj.initial_email)
+        print(code_obj.badge)
+        print(code_obj.system)
+        print(code_obj.issuer)
+        print(code_obj.program)
         # TODO: send the code in an email, etc.
 
 
@@ -93,9 +98,18 @@ class ClaimCodeClaimView(View):
 
     def get(self, request, *args, **kwargs):
         code = args[0]
-        claim_obj = ClaimCode.objects.get(code=code)
-        # if not, then... TODO
-        api_info = claim_obj.get_info()
-        # if not, then... TODO
+
+        try:
+            claim_obj = ClaimCode.objects.get(code=code)
+        except ClaimCode.DoesNotExist:
+            return render(request, "badgekit_webhooks/claim_code_404.html", {},
+                    status=404)
+
+        try:
+            api_info = claim_obj.get_info()
+        except (BadgeKitException, RequestException) as e:
+            return render_badgekit_error(request, e)
+
         already_claimed = api_info['claimCode']['claimed']
+        # if already claimed, then... TODO
         return render(request, self.template_name, {'asdf': 'Jkl'})

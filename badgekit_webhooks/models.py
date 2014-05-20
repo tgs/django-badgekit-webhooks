@@ -110,8 +110,30 @@ class ClaimCode(models.Model):
     initial_email = models.EmailField(max_length=255)
     badge = models.CharField(max_length=255) # slug
     system = models.CharField(max_length=255) # slug
-    issuer = models.CharField(max_length=255, blank=True) # slug
-    program = models.CharField(max_length=255, blank=True) # slug
+    issuer = models.CharField(max_length=255, blank=True,
+            null=True) # slug
+    program = models.CharField(max_length=255, blank=True,
+            null=True) # slug
+
+    @classmethod
+    def create(cls, **kwargs):
+        if 'code' in kwargs:
+            raise NotImplementedError("Only random codes supported so far")
+
+        # Use _bkapi_kwargs as defaults
+        new_args = dict(_bkapi_kwargs)
+        new_args.update(kwargs)
+        del(new_args['initial_email'])
+
+        # TODO: would be nice to cache this response so that e.g. when sending
+        # the email we don't have to hit the api again for the badge image.
+        response = get_badgekit_api().create('codes/random',
+                {'email': kwargs['initial_email']},
+                **new_args)
+        new_args['code'] = response['claimCode']['code']
+
+        new_args.update(kwargs)
+        return cls(**new_args)
 
     def get_info(self):
         """
@@ -131,9 +153,3 @@ class Badge(object):
     def form_choices():
         badges = get_badgekit_api().list('badge', **_bkapi_kwargs)
         return [(b['slug'], b['name']) for b in badges['badges']]
-
-    @staticmethod
-    def create_claim_code(badge_slug, email):
-        response = get_badgekit_api().create('codes/random', {'email': email},
-                badge=badge_slug, **_bkapi_kwargs)
-        return response['claimCode']['code']
