@@ -3,8 +3,9 @@ language: python
 python:
   - 2.6
   - 2.7
-  - 3.2
-  - 3.3
+# django-inlinecss is py2 only for now :(
+  #- 3.2
+  #- 3.3
 
 env:
   - DJANGO=https://github.com/django/django/tarball/master

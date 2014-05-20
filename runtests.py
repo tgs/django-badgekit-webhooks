@@ -14,6 +14,7 @@ DEFAULT_SETTINGS = dict(
         "django.contrib.sites",
         "django.contrib.staticfiles",
         "django_nose",
+        "django_inlinecss",
         "badgekit_webhooks",
         "badgekit_webhooks.tests"
     ],
@@ -24,6 +25,7 @@ DEFAULT_SETTINGS = dict(
         }
     },
     STATIC_URL="/static/",
+    STATIC_ROOT="staticfiles",
     SITE_ID=1,
     ROOT_URLCONF="badgekit_webhooks.tests.urls",
     SECRET_KEY="notasecret",
