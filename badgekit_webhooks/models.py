@@ -118,6 +118,8 @@ class ClaimCode(models.Model):
     @classmethod
     def create(cls, **kwargs):
         if 'code' in kwargs:
+            # should be easy, just need to call api.create('codes')
+            # Just not done yet.
             raise NotImplementedError("Only random codes supported so far")
 
         # Use _bkapi_kwargs as defaults
@@ -133,7 +135,9 @@ class ClaimCode(models.Model):
         new_args['code'] = response['claimCode']['code']
 
         new_args.update(kwargs)
-        return cls(**new_args)
+        obj = cls(**new_args)
+        obj.save()
+        return obj
 
     def get_info(self):
         """

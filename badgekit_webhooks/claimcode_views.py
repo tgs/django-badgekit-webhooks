@@ -2,7 +2,11 @@ from __future__ import unicode_literals
 from django.views.generic.edit import FormMixin
 from django.views.generic.edit import FormView
 from django.views.generic.base import View, TemplateResponseMixin
+from django.core.urlresolvers import reverse
 from django.shortcuts import render
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.template.loader import render_to_string
 from . import forms
 from .models import Badge, ClaimCode
 from badgekit import RequestException, BadgeKitException
@@ -57,7 +61,7 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
                     message='No e-mail was sent.')
 
         if form.is_valid():
-            return self.form_valid(form)
+            return self.form_valid(form, request)
         else:
             return self.form_invalid(form)
 
@@ -66,29 +70,32 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
     def put(self, *args, **kwargs):
         return self.post(*args, **kwargs)
 
-    def form_valid(self, form):
+    def get_badge_choices(self):
+        return Badge.form_choices()
+
+    def form_valid(self, form, request):
         try:
-            self.send_claim_mail(form)
+            code_obj = ClaimCode.create(
+                badge=form.cleaned_data['badge'],
+                initial_email=form.cleaned_data['awardee'])
+            self.send_claim_mail(request, code_obj)
         except (RequestException, BadgeKitException) as e:
             return render_badgekit_error(request, e)
 
         return super(SendClaimCodeView, self).form_valid(form)
 
-    def get_badge_choices(self):
-        return Badge.form_choices()
-
-    def send_claim_mail(self, form):
-        # if the code doesn't work, tell the admin so?
-        code_obj = ClaimCode(
-                badge=form.cleaned_data['badge'],
-                initial_email=form.cleaned_data['awardee'])
-        print(code_obj.code)
-        print(code_obj.initial_email)
-        print(code_obj.badge)
-        print(code_obj.system)
-        print(code_obj.issuer)
-        print(code_obj.program)
-        # TODO: send the code in an email, etc.
+    def send_claim_mail(self, request, code_obj):
+        claim_url = request.build_absolute_uri(
+                reverse('claimcode_claim', args=[code_obj.code]))
+        text_message = render_to_string(
+                'badgekit_webhooks/claim_code_email.txt',
+                {
+                    'claim_url': claim_url,
+                })
+        email = EmailMessage("You're earned a badge!",
+                text_message, settings.DEFAULT_FROM_EMAIL,
+                [code_obj.initial_email])
+        email.send()
 
 
 class ClaimCodeClaimView(View):
