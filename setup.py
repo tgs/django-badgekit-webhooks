@@ -30,6 +30,7 @@ setup(
         "django-appconf",
         "requests",
         "badgekit-api-client>=0.3.1",
+        "django_inlinecss",
     ],
     test_suite="runtests.runtests",
     classifiers=[
