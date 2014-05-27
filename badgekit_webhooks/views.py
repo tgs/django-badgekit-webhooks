@@ -20,6 +20,9 @@ from django.core.urlresolvers import reverse
 from . import utils
 
 
+from .claimcode_views import *
+
+
 logger = logging.getLogger(__name__)
 
 

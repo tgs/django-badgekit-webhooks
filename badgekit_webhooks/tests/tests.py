@@ -92,6 +92,20 @@ class HookTests(TestCase):
                     content_type="application/json")
             self.assertEqual(resp.status_code, 200)
 
+    def testAcceptNonAwardAction(self):
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                    data='{"action": "jump"}',
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 200)
+
+    def testRejectNotEnoughFields(self):
+        with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
+            resp = self.client.post(hook_url,
+                    data='{"action": "award"}',
+                    content_type="application/json")
+            self.assertEqual(resp.status_code, 400)
+
     def testRejectBadFields(self):
         with self.settings(BADGEKIT_SKIP_JWT_AUTH=True):
             resp = self.client.post(hook_url,

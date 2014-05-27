@@ -1,0 +1,14 @@
+{% extends "badgekit_webhooks/app_base.html" %}
+
+{% block body %}
+  <h1>BadgeKit-API had an error!</h1>
+
+  <div>
+    {% if message %}
+      <p>{{ message }}</p>
+    {% endif %}
+    <p>Here is the exception's message:</p>
+
+    <p>{{ exception }}</p>
+  </div>
+{% endblock %}
