@@ -1,9 +1,14 @@
-Hi!
+Congratulations!
 
-Congratulations!  You have been awarded a digital badge in recognition for your
-contributions to Open edX.  You can go to the URL below to claim your badge,
-and show it off to the world.
+You have been awarded a digital badge from {{ organization  }}. You can visit the URL below to claim your badge and show it off to the world. You can choose to send this badge to whichever email address you prefer to receive badge awards.
 
 {{ claim_url }}
 
-Thanks for your work!
+Badge information:
+{{ badge_name }}
+{{ badge_earner_description }}
+
+
+Learn more about {{ organization }} badges: {{ about_program_url }}
+
+Contact us: {{ contact_email }} | {{ site_base_url }}
