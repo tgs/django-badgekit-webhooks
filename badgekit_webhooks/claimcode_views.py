@@ -95,18 +95,19 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
 
         context = {
             'claim_url': claim_url,
-            'organization': 'open edX',
-            'badge_name': 'Open edX Contributor',
-            'badgeclass_image_url': 'http://placekitten.com/300/300',
-            'badge_earner_description': 'Contribute to the edX code, which is accomplished most visibly with an accepted pull request on GitHub.',
+            'organization': code_obj['badge']['issuer']['name'],
+            'badge_name': code_obj['badge']['name'],
+            'badgeclass_image_url': code_obj['badge']['imageUrl'],
+            'badge_earner_description': code_obj['badge']['earnerDescription'],
             'about_program_url': '#',
             'contact_email': 'contact@example.com',
-            'site_base_url': 'http://localhost:8000',
+            'site_base_url': request.build_absolute_uri('/'),
             'unsubscribe_link': '#',
             }
+        print context
 
         text_message = render_to_string('badgekit_webhooks/claim_code_email.txt', context)
-        html_message = render_to_string('badgekit_webhooks/claim_code_email.html')
+        html_message = render_to_string('badgekit_webhooks/claim_code_email.html', context)
 
         email = EmailMultiAlternatives("You've earned a badge!", text_message,
             settings.DEFAULT_FROM_EMAIL, [code_obj['claimCode']['email']])
