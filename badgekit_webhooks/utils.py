@@ -51,3 +51,31 @@ def get_image_for_assertion(assertion_url):
     except (requests.exceptions.RequestException, ValueError, KeyError):
         logging.exception('Problem while determining image for assertion %s' % assertion_url)
         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
+
+# def get_properties_for_assertion(assertion_url, props):
+#     """
+#     Given a badge assertion URL, return a specified list of properties for that assertion.
+
+#     If the assertion is not available or parseable, returns a default
+#     image, which is settings.BADGEKIT_DEFAULT_BADGE_IMAGE.
+#     """
+#     # TODO: make sure various URLs are subjected to a whitelist test.
+#     # Maybe also check that they are reasonable size, etc?
+#     try:
+#         assertion_resp = requests.get(assertion_url)
+#         assertion_obj = json.loads(assertion_resp.text)
+#         badge_url = assertion_obj['badge']
+#         badge_resp = requests.get(badge_url)
+#         badge_obj = json.loads(badge_resp.text)
+#         return badge_obj['image']
+
+#     except (requests.exceptions.RequestException, ValueError, KeyError):
+#         logging.exception('Problem while determining image for assertion %s' % assertion_url)
+#         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
+
+
+
+
+
+
+        

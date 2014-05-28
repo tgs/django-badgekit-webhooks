@@ -6,6 +6,7 @@ from django.views.generic.base import View, TemplateResponseMixin
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
 from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
 from . import forms
@@ -91,14 +92,25 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         claim_slug = '.'.join([code_obj['badge']['slug'], code_obj['claimCode']['code']])
         claim_url = request.build_absolute_uri(
                 reverse('claimcode_claim', args=[claim_slug]))
-        text_message = render_to_string(
-                'badgekit_webhooks/claim_code_email.txt',
-                {
-                    'claim_url': claim_url,
-                })
-        email = EmailMessage("You're earned a badge!",
-                text_message, settings.DEFAULT_FROM_EMAIL,
-                [code_obj['claimCode']['email']])
+
+        context = {
+            'claim_url': claim_url,
+            'organization': 'open edX',
+            'badge_name': 'Open edX Contributor',
+            'badgeclass_image_url': 'http://placekitten.com/300/300',
+            'badge_earner_description': 'Contribute to the edX code, which is accomplished most visibly with an accepted pull request on GitHub.',
+            'about_program_url': '#',
+            'contact_email': 'contact@example.com',
+            'site_base_url': 'http://localhost:8000',
+            'unsubscribe_link': '#',
+            }
+
+        text_message = render_to_string('badgekit_webhooks/claim_code_email.txt', context)
+        html_message = render_to_string('badgekit_webhooks/claim_code_email.html')
+
+        email = EmailMultiAlternatives("You've earned a badge!", text_message,
+            settings.DEFAULT_FROM_EMAIL, [code_obj['claimCode']['email']])
+        email.attach_alternative(html_message, "text/html")
         email.send()
 
 
