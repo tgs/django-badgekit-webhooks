@@ -106,7 +106,7 @@ class ClaimCodeClaimView(View):
     template_name = 'badgekit_webhooks/claim_code_claim.html'
     form_class = forms.ClaimCodeClaimForm
     success_url = '/' # TODO
-    code_parse_re = re.compile(r'^([-a-zA-Z0-9_]+)\.([-a-zA-Z0-9_]+)$')
+    code_parse_re = re.compile(r'^([-a-zA-Z0-9_]{1,255})\.([-a-zA-Z0-9_]{1,255})$')
 
     def get(self, request, *args, **kwargs):
         code_raw = args[0]
