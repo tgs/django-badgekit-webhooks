@@ -15,4 +15,5 @@ urlpatterns = patterns(
         name="badge_issue_form"),
     url(r"^claimcode/([-A-Za-z0-9_]+)/$",
         views.ClaimCodeClaimView.as_view(), name='claimcode_claim'),
+    url(r"^badges/$", "badgekit_webhooks.views.list_badges_view", name="badges_list"),
     )

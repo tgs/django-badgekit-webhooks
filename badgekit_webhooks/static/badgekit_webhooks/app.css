@@ -85,3 +85,17 @@ section {
   /* Remove the bottom border on the jumbotron for visual effect */
   .jumbotron {
     border-bottom: 0; } }
+
+
+  .full-badgelist {
+
+  }
+  .full-badgelist ul { list-style: none; }
+  .full-badgelist li { display: block; }
+  .full-badgelist li img { 
+  	float: left;
+  	max-width: 25%;
+  	height: auto;
+  	margin: 0 0.75em 0 0;
+  }
+  .full-badgelist li p { }
