@@ -1,6 +1,14 @@
 {% extends 'badgekit_webhooks/app_base.html' %}
 {% block body %}
 
-<div> Hi </div>
+  <h1>Congratulations!</h1>
 
+  <div>
+    <form method="POST" action="">{% csrf_token %}
+      <p>What e-mail address do you use to sign in to Mozilla Persona?
+      Capitalization is important!</p>
+      {{ form.as_p }}
+      <input type="submit" value="Claim" />
+    </form>
+  </div>
 {% endblock %}
