@@ -99,12 +99,7 @@ class ClaimPageTest(TestCase):
         with self.settings(BADGEKIT_API_URL="http://257.0.0.0/", # bad IP
                 BADGEKIT_API_KEY="secret",
                 BADGEKIT_SYSTEM='bk'):
-            obj, created = models.ClaimCode.objects.get_or_create(
-                    badge='excellent-badge',
-                    code='6f1c2410dc',
-                    system='badgekit', initial_email='so2me@example.com')
-            self.assertTrue(obj)
-            url = reverse('claimcode_claim', args=['6f1c2410dc'])
+            url = reverse('claimcode_claim', args=['badgename.6f1c2410dc'])
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 503);
 
@@ -117,12 +112,7 @@ class ClaimPageTest(TestCase):
         with self.settings(BADGEKIT_API_URL="http://example.com/",
                 BADGEKIT_API_KEY="secret",
                 BADGEKIT_SYSTEM='bk'):
-            obj, created = models.ClaimCode.objects.get_or_create(
-                    badge='excellent-badge',
-                    code='6f1c2410dc',
-                    system='badgekit', initial_email='so2me@example.com')
-            self.assertTrue(obj)
-            url = reverse('claimcode_claim', args=['6f1c2410dc'])
+            url = reverse('claimcode_claim', args=['badgename.6f1c2410dc'])
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200);
             self.assertTemplateUsed(resp, 'badgekit_webhooks/claim_code_claim.html')
