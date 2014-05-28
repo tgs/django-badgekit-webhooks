@@ -4,6 +4,7 @@ import django.dispatch
 from django.conf import settings
 from appconf import AppConf
 from django.templatetags.static import static
+from django.core.exceptions import ImproperlyConfigured
 from badgekit import BadgeKitAPI
 
 
@@ -79,6 +80,15 @@ class BadgekitWebhooksAppConf(AppConf):
 
 
 def get_badgekit_api():
+    if not settings.BADGEKIT_API_URL and settings.BADGEKIT_API_KEY:
+        raise ImproperlyConfigured("BADGEKIT_API_URL and BADGEKIT_API_KEY are required for badgekit queries")
+    return BadgeKitAPI(settings.BADGEKIT_API_URL,
+        settings.BADGEKIT_API_KEY,
+        defaults=_bkapi_kwargs)
+
+def get_bare_badgekit_api():
+    if not settings.BADGEKIT_API_URL and settings.BADGEKIT_API_KEY:
+        raise ImproperlyConfigured("BADGEKIT_API_URL and BADGEKIT_API_KEY are required for badgekit queries")
     return BadgeKitAPI(settings.BADGEKIT_API_URL,
         settings.BADGEKIT_API_KEY)
 
@@ -103,53 +113,6 @@ class BadgeInstanceNotification(models.Model):
 
 badge_instance_issued = django.dispatch.Signal(
         providing_args=['uid', 'email', 'assertionUrl', 'issuedOn'])
-
-
-class ClaimCode(models.Model):
-    code = models.CharField(max_length=255, primary_key=True)
-    initial_email = models.EmailField(max_length=255)
-    badge = models.CharField(max_length=255) # slug
-    system = models.CharField(max_length=255) # slug
-    issuer = models.CharField(max_length=255, blank=True,
-            null=True) # slug
-    program = models.CharField(max_length=255, blank=True,
-            null=True) # slug
-
-    @classmethod
-    def create(cls, **kwargs):
-        if 'code' in kwargs:
-            # should be easy, just need to call api.create('codes')
-            # Just not done yet.
-            raise NotImplementedError("Only random codes supported so far")
-
-        # Use _bkapi_kwargs as defaults
-        new_args = dict(_bkapi_kwargs)
-        new_args.update(kwargs)
-        del(new_args['initial_email'])
-
-        # TODO: would be nice to cache this response so that e.g. when sending
-        # the email we don't have to hit the api again for the badge image.
-        response = get_badgekit_api().create('codes/random',
-                {'email': kwargs['initial_email']},
-                **new_args)
-        new_args['code'] = response['claimCode']['code']
-
-        new_args.update(kwargs)
-        obj = cls(**new_args)
-        obj.save()
-        return obj
-
-    def get_info(self):
-        """
-        Get info about the claim code - returns a dict
-        with two fields, 'claimCode' and 'badge'.
-
-        Could also throw exceptions!
-        """
-        api = get_badgekit_api()
-        return api.get(code=self.code, badge=self.badge,
-                system=self.system, issuer=self.issuer,
-                program=self.program)
 
 
 class Badge(object):

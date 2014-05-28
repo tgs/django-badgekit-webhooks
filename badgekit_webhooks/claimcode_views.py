@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import re
 from django.views.generic.edit import FormMixin
 from django.views.generic.edit import FormView
 from django.views.generic.base import View, TemplateResponseMixin
@@ -8,7 +9,7 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from django.template.loader import render_to_string
 from . import forms
-from .models import Badge, ClaimCode
+from . import models
 from badgekit import RequestException, BadgeKitException
 from django.contrib.admin.views.decorators import staff_member_required
 import logging as __logging
@@ -71,13 +72,14 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         return self.post(*args, **kwargs)
 
     def get_badge_choices(self):
-        return Badge.form_choices()
+        return models.Badge.form_choices()
 
     def form_valid(self, form, request):
         try:
-            code_obj = ClaimCode.create(
-                badge=form.cleaned_data['badge'],
-                initial_email=form.cleaned_data['awardee'])
+            api = models.get_badgekit_api()
+            code_obj = api.create('codes/random',
+                    dict(email=form.cleaned_data['awardee']),
+                    badge=form.cleaned_data['badge'])
             self.send_claim_mail(request, code_obj)
         except (RequestException, BadgeKitException) as e:
             return render_badgekit_error(request, e)
@@ -85,8 +87,10 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         return super(SendClaimCodeView, self).form_valid(form)
 
     def send_claim_mail(self, request, code_obj):
+        # TODO: now we have tons more info from the claim code request, we can use.
+        claim_slug = '.'.join([code_obj['badge']['slug'], code_obj['claimCode']['code']])
         claim_url = request.build_absolute_uri(
-                reverse('claimcode_claim', args=[code_obj.code]))
+                reverse('claimcode_claim', args=[claim_slug]))
         text_message = render_to_string(
                 'badgekit_webhooks/claim_code_email.txt',
                 {
@@ -94,7 +98,7 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
                 })
         email = EmailMessage("You're earned a badge!",
                 text_message, settings.DEFAULT_FROM_EMAIL,
-                [code_obj.initial_email])
+                [code_obj['claimCode']['email']])
         email.send()
 
 
@@ -102,18 +106,22 @@ class ClaimCodeClaimView(View):
     template_name = 'badgekit_webhooks/claim_code_claim.html'
     form_class = forms.ClaimCodeClaimForm
     success_url = '/' # TODO
+    code_parse_re = re.compile(r'^([-a-zA-Z0-9_]+)\.([-a-zA-Z0-9_]+)$')
 
     def get(self, request, *args, **kwargs):
-        code = args[0]
+        code_raw = args[0]
 
-        try:
-            claim_obj = ClaimCode.objects.get(code=code)
-        except ClaimCode.DoesNotExist:
+        code_bits = self.code_parse_re.match(code_raw)
+        if not code_bits:
             return render(request, "badgekit_webhooks/claim_code_404.html", {},
                     status=404)
+        badge = code_bits.group(1)
+        claimcode = code_bits.group(2)
+
+        api = models.get_badgekit_api()
 
         try:
-            api_info = claim_obj.get_info()
+            api_info = api.get(code=claimcode, badge=badge)
         except (BadgeKitException, RequestException) as e:
             return render_badgekit_error(request, e)
 
@@ -128,9 +136,9 @@ class ClaimCodeClaimView(View):
             raise NotImplementedError("todo: redirect")
 
         form = self.form_class(
-                initial={'issue_email': claim_obj.initial_email})
+                initial={'issue_email': claim_info['email']})
 
         return render(request, self.template_name, {
-                'claim_obj': claim_obj,
+                'claim_obj': {},
                 'form': form,
             })
