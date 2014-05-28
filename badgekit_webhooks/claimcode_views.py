@@ -104,7 +104,6 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
             'site_base_url': request.build_absolute_uri('/'),
             'unsubscribe_link': '#',
             }
-        print context
 
         text_message = render_to_string('badgekit_webhooks/claim_code_email.txt', context)
         html_message = render_to_string('badgekit_webhooks/claim_code_email.html', context)
