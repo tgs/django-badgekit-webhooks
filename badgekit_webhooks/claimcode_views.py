@@ -4,7 +4,6 @@ from django.views.generic.edit import FormView
 from django.views.generic.base import View, TemplateResponseMixin
 from django.core.urlresolvers import reverse
 from django.shortcuts import render
-from django.core.mail import EmailMessage
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.template.loader import render_to_string
