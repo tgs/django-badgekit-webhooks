@@ -117,6 +117,20 @@ class ClaimCodeClaimView(View):
         except (BadgeKitException, RequestException) as e:
             return render_badgekit_error(request, e)
 
-        already_claimed = api_info['claimCode']['claimed']
-        # if already claimed, then... TODO
-        return render(request, self.template_name, {'asdf': 'Jkl'})
+        claim_info = api_info['claimCode']
+        if claim_info['multiuse']:
+            logger.warning("Sorry, I don't really know what to do with multi-use claim codes!")
+
+        if claim_info['claimed']:
+            # TODO: redirect to the page where you claim on badge backpack. - but how?
+            # Can we get a link to the assertion?
+            # We might need to keep track of assertion URLs when we issue the badge.
+            raise NotImplementedError("todo: redirect")
+
+        form = self.form_class(
+                initial={'issue_email': claim_obj.initial_email})
+
+        return render(request, self.template_name, {
+                'claim_obj': claim_obj,
+                'form': form,
+            })
