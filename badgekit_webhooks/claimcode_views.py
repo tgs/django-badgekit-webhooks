@@ -4,7 +4,7 @@ from django.views.generic.edit import FormMixin
 from django.views.generic.edit import FormView
 from django.views.generic.base import View, TemplateResponseMixin
 from django.core.urlresolvers import reverse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.core.mail import EmailMessage
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
@@ -120,20 +120,27 @@ class ClaimCodeClaimView(View):
     success_url = '/' # TODO
     code_parse_re = re.compile(r'^([-a-zA-Z0-9_]{1,255})\.([-a-zA-Z0-9_]{1,255})$')
 
-    def get(self, request, *args, **kwargs):
-        code_raw = args[0]
-
+    def get_api_info(self, code_raw):
         code_bits = self.code_parse_re.match(code_raw)
         if not code_bits:
-            return render(request, "badgekit_webhooks/claim_code_404.html", {},
-                    status=404)
+            raise ValueError("Unparseable claim code")
+
         badge = code_bits.group(1)
         claimcode = code_bits.group(2)
 
         api = models.get_badgekit_api()
 
+        # may raise exceptions
+        return api.get(code=claimcode, badge=badge)
+
+    def get(self, request, *args, **kwargs):
+        code_raw = args[0]
+
         try:
-            api_info = api.get(code=claimcode, badge=badge)
+            api_info = self.get_api_info(code_raw)
+        except ValueError:
+            return render(request, "badgekit_webhooks/claim_code_404.html", {},
+                    status=404)
         except (BadgeKitException, RequestException) as e:
             return render_badgekit_error(request, e)
 
@@ -154,3 +161,40 @@ class ClaimCodeClaimView(View):
                 'claim_obj': {},
                 'form': form,
             })
+
+    def post(self, request, *args, **kwargs):
+        # to break circular import ring:
+        from .views import create_claim_url
+        code_raw = args[0]
+
+        try:
+            api_info = self.get_api_info(code_raw)
+        except ValueError:
+            return render(request, "badgekit_webhooks/claim_code_404.html", {},
+                    status=404)
+        except (BadgeKitException, RequestException) as e:
+            return render_badgekit_error(request, e)
+
+        form = self.form_class(request.POST)
+        if not form.is_valid():
+            return render(request, self.template_name, {
+                'claim_obj': {},
+                'form': form,
+            })
+
+        try:
+            api = models.get_badgekit_api()
+
+            # if this fails, an exception is thrown.
+            issuing_info = api.create('instance', {
+                'email': issue_email,
+                'claimCode': api_info['claimCode']['code'],
+                # TODO: Could set expiration here.
+                },
+                badge=api_info['badge']['slug'])
+
+            # Redirect them to their claim page!!
+            return redirect(
+                    create_claim_url(issuing_info['instance']['assertionUrl']))
+        except (BadgeKitException, RequestException) as e:
+            return render_badgekit_error(request, e)
