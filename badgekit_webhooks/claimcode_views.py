@@ -149,10 +149,10 @@ class ClaimCodeClaimView(View):
             logger.warning("Sorry, I don't really know what to do with multi-use claim codes!")
 
         if claim_info['claimed']:
-            # TODO: redirect to the page where you claim on badge backpack. - but how?
-            # Can we get a link to the assertion?
-            # We might need to keep track of assertion URLs when we issue the badge.
-            raise NotImplementedError("todo: redirect")
+            # we will redirect them to the claim page
+            # maybe let them see the email first??
+            #a.get(badge='badge', instance='email')
+            raise NotImplementedError("almost there")
 
         form = self.form_class(
                 initial={'issue_email': claim_info['email']})
