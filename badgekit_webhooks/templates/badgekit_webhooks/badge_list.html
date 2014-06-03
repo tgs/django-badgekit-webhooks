@@ -1,0 +1,15 @@
+{% extends "badgekit_webhooks/app_base.html" %}
+
+{% block body %}
+    <h2>Badges available in this system</h2>
+    <ul class="full-badgelist">
+        {% for badge in badge_list %}
+          <li class="clearfix">
+          	<a href="{{ criteriaUrl }}"><img src="{{ badge.imageUrl }}"></a>
+            <h4>Name: <a href="{{ criteriaUrl }}">{{ badge.name }}</a> </h4>
+            <p class="badge-strapline"> {{ badge.strapline }} </p>
+            <p class="badge-description"> {{ badge.description }} </p>
+          </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

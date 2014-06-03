@@ -120,3 +120,29 @@ class Badge(object):
     def form_choices():
         badges = get_badgekit_api().list('badge', **_bkapi_kwargs)
         return [(b['slug'], b['name']) for b in badges['badges']]
+
+    @staticmethod
+    def list_badges():
+        """
+        Returns a list of badges for an informational page about what badges 
+        are available in the system
+        """
+        result = []
+        badges = get_badgekit_api().list('badge', **_bkapi_kwargs)
+        # return [(b['slug'], b['name'], b['strapline'], b['earnerDescription'], b['imageUrl'], b['criteriaUrl']) for b in badges['badges']]
+
+        for b in badges['badges']:
+            result.append( { 
+                'name': b['name'],
+                'strapline': b['strapline'],
+                'description': b['earnerDescription'],
+                'imageUrl': b['imageUrl'],
+                'criteriaUrl': b['criteriaUrl']
+             })
+
+        return result
+
+
+
+
+
