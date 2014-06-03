@@ -159,6 +159,6 @@ models.badge_instance_issued.connect(send_claim_email, dispatch_uid='email-sende
 
 def list_badges_view(request):
     context = {
-        'badge_list': Badge.list_badges()
+        'badge_list': models.Badge.list_badges()
         }
     return render(request, 'badgekit_webhooks/badge_list.html', context)
