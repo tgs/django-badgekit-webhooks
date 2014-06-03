@@ -19,6 +19,7 @@ setup(
     version=__import__("badgekit_webhooks").__version__,
     url="http://django-badgekit-webhooks.rtfd.org/",
     license="MIT",
+    include_package_data=True,
     packages=find_packages(),
     tests_require=[
         "Django>=1.4",
