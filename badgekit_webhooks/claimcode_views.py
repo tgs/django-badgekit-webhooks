@@ -32,7 +32,7 @@ def render_badgekit_error(request, exception, message=None):
 class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
     template_name = 'badgekit_webhooks/send_claim_code.html'
     form_class = forms.SendClaimCodeForm
-    success_url = '/' # TODO
+    success_url = '/bk/issue/?issued=1' # can't use reverse() because circular.
 
     def get(self, request, *args, **kwargs):
         """
@@ -41,9 +41,11 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         form_class = self.get_form_class()
         form = self.get_form(form_class)
 
+        issued = 'issued' in request.GET
+
         try:
             form.fields['badge'].choices = self.get_badge_choices()
-            return self.render_to_response(self.get_context_data(form=form))
+            return self.render_to_response(self.get_context_data(form=form, issued=issued))
         except (RequestException, BadgeKitException) as e:
             return render_badgekit_error(request, e)
 
