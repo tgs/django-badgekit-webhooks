@@ -198,7 +198,7 @@ class ClaimCodeClaimView(View):
 
             # if this fails, an exception is thrown.
             issuing_info = api.create('instance', {
-                'email': issue_email,
+                'email': form.cleaned_data['issue_email'],
                 'claimCode': api_info['claimCode']['code'],
                 # TODO: Could set expiration here.
                 },
