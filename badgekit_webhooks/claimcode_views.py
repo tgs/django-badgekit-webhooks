@@ -96,7 +96,7 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
 
         context = {
             'claim_url': claim_url,
-            'organization': code_obj['badge']['issuer']['name'],
+            'organization': 'edx', #code_obj['badge']['issuer']['name'],
             'badge_name': code_obj['badge']['name'],
             'badgeclass_image_url': code_obj['badge']['imageUrl'],
             'badge_earner_description': code_obj['badge']['earnerDescription'],
