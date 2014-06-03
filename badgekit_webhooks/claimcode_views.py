@@ -134,6 +134,7 @@ class ClaimCodeClaimView(View):
         return api.get(code=claimcode, badge=badge)
 
     def get(self, request, *args, **kwargs):
+        from .views import create_claim_url
         code_raw = args[0]
 
         try:
@@ -151,8 +152,19 @@ class ClaimCodeClaimView(View):
         if claim_info['claimed']:
             # we will redirect them to the claim page
             # maybe let them see the email first??
-            #a.get(badge='badge', instance='email')
-            raise NotImplementedError("almost there")
+            # when you get(badge=badge, code=code), it shows you
+            # the code the badge was issued to.
+            api = models.get_badgekit_api()
+            instance_info = api.get(badge=api_info['badge']['slug'],
+                    instance=claim_info['email'])
+
+
+            context = {
+                    'instance': instance_info['instance'],
+                    'claimUrl': create_claim_url(instance_info['instance']['assertionUrl']),
+                    }
+            return render(request, "badgekit_webhooks/claim_code_already_claimed.html",
+                    context)
 
         form = self.form_class(
                 initial={'issue_email': claim_info['email']})

@@ -1,0 +1,16 @@
+{% extends "badgekit_webhooks/app_base.html" %}
+
+{% block body %}
+  <h1>Congrats!  It looks like you've claimed your badge!</h1>
+
+  <div>
+    <p>It looks like you've claimed this badge already!  You've
+    assigned it to the e-mail address <em>{{ instance.email }}</em>.</p>
+
+    <p>If that's your e-mail address, you can go ahead and <a
+	    href="{{ claimUrl }}">push your badge to the Badge Backpack</a>!</p>
+
+    <p>If you've assigned it to the wrong e-mail, or you think someone
+    else has claimed your badge, you can contact the admins.</p>
+  </div>
+{% endblock %}
