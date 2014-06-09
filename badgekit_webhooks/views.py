@@ -158,6 +158,9 @@ def render_claim_email(request, assertionUrl):
             'assertion': assertion,
             'badge': badge,
             'issuer': issuer,
+            # TODO: this could come from BKAPI, but we only have the 'public'
+            # urls of the badge information.  We would have to get the same
+            # url, but with /public/ removed from the beginning.
             'badge_earner_description': 'Contribute to the edX code, which is accomplished most visibly with an accepted pull request on GitHub. The link below WILL NOT WORK, this is coming from my localhost. But check out how responsive this email template is by resizing your viewing window! So response!',
             'site_base_url': site_base_url,
             'unsubscribe_link': '#',
