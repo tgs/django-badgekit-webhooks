@@ -11,6 +11,7 @@ urlpatterns = patterns(
         name="badge_issued_hook"),
     url(r"^instances/$", views.InstanceListView.as_view()),
     url(r"^claim/([-A-Za-z0-9_]+)/$", 'badgekit_webhooks.views.claim_page'),
+    url(r"^claim/([-A-Za-z0-9_]+)/email/(html|text)$", 'badgekit_webhooks.views.show_claim_email'),
     url(r"^issue/$", staff_member_required(views.SendClaimCodeView.as_view()),
         name="badge_issue_form"),
     url(r"^claimcode/([-A-Za-z.0-9_]+)/$",

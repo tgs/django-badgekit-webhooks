@@ -18,7 +18,7 @@ import hashlib
 import logging
 from django.core.urlresolvers import reverse
 from . import utils
-
+from django.contrib.admin.views.decorators import staff_member_required
 
 from .claimcode_views import *
 
@@ -111,6 +111,7 @@ def create_claim_url(assertionUrl):
             args=[utils.encode_param(assertionUrl)])
 
 
+# VIEW: a page for the user to claim a badge on the Backpack
 def claim_page(request, b64_assertion_url):
     # The URL should be ASCII encoded: only IRIs use higher Unicode chars.  Right????
     assertionUrl = utils.decode_param(b64_assertion_url).decode('ascii')
@@ -130,6 +131,46 @@ def claim_page(request, b64_assertion_url):
         })
 
 
+@staff_member_required
+def show_claim_email(request, b64_assertion_url, kind):
+    assertionUrl = utils.decode_param(b64_assertion_url).decode('ascii')
+
+    email_formats = render_claim_email(request, assertionUrl)
+    if kind == 'html':
+        return HttpResponse(email_formats[1])
+    else:
+        return HttpResponse(email_formats[0])
+
+def render_claim_email(request, assertionUrl):
+    abs_url = request.build_absolute_uri(
+            create_claim_url(smart_bytes(assertionUrl)))
+
+    site_base_url = request.build_absolute_uri('/')
+
+    api = models.get_badgekit_api()
+    assertion = api.get_public_url(assertionUrl)
+    badge = api.get_public_url(assertion['badge'])
+    issuer = api.get_public_url(badge['issuer'])
+
+    context = {
+            'claim_url': abs_url,
+            'assertionUrl': assertionUrl,
+            'assertion': assertion,
+            'badge': badge,
+            'issuer': issuer,
+            'badge_earner_description': 'Contribute to the edX code, which is accomplished most visibly with an accepted pull request on GitHub. The link below WILL NOT WORK, this is coming from my localhost. But check out how responsive this email template is by resizing your viewing window! So response!',
+            'site_base_url': site_base_url,
+            'unsubscribe_link': '#',
+            }
+
+    text_message = render_to_string(
+            'badgekit_webhooks/claim_email.txt', context)
+    html_message = render_to_string(
+            'badgekit_webhooks/badge_earned_email.html', context)
+
+    return (text_message, html_message)
+
+
 # 'sender' here is a Django signal sender, not an e-mail sender.
 # In this case, it must be a Django Request object.
 def send_claim_email(sender, **kwargs):
@@ -139,33 +180,15 @@ def send_claim_email(sender, **kwargs):
 
     logger.info('Sending e-mail to badge earner %s', kwargs['email'])
 
-    abs_url = sender.build_absolute_uri(
-            create_claim_url(smart_bytes(kwargs['assertionUrl'])))
+    text_message, html_message = render_claim_email(
+            sender, kwargs['assertionUrl'])
 
-    site_base_url = sender.build_absolute_uri('/')
-
-    api = models.get_badgekit_api()
-    assertion = api.get_public_url(kwargs['assertionUrl'])
-    badge = api.get_public_url(assertion['badge'])
-    issuer = api.get_public_url(badge['issuer'])
-
-    context = {
-            'claim_url': abs_url,
-            'assertion': assertion,
-            'badge': badge,
-            'issuer': issuer,
-            'badge_earner_description': 'Contribute to the edX code, which is accomplished most visibly with an accepted pull request on GitHub. The link below WILL NOT WORK, this is coming from my localhost. But check out how responsive this email template is by resizing your viewing window! So response!',
-            'site_base_url': site_base_url,
-            'unsubscribe_link': '#',
-            }
-    context.update(kwargs)
-
-    text_message = render_to_string('badgekit_webhooks/claim_email.txt', context)
-    
-    email = EmailMultiAlternatives("You've earned a badge!", text_message,
-            settings.DEFAULT_FROM_EMAIL, [kwargs['email']])
-    email.attach_alternative(render_to_string('badgekit_webhooks/badge_earned_email.html', context), "text/html")
-
+    email = EmailMultiAlternatives(
+            "You've earned a badge!",
+            text_message,
+            settings.DEFAULT_FROM_EMAIL,
+            [kwargs['email']])
+    email.attach_alternative(html_message, "text/html")
     email.send()
 
 
