@@ -25,10 +25,14 @@
 			
 				<div class="content">
 					<table bgcolor="#f8f8f8">
-					<tr>
-						<td><img src="http://placekitten.com/200/30" /></td>
-						<td align="right"><h6 class="collapse">{{ organization }}</h6></td>
-					</tr>
+            <tr>
+              {% if issuer.image %}
+                <td>
+                  <img src="{{ issuer.image }}" />
+                </td>
+              {% endif %}
+              <td align="right"><h6 class="collapse">{{ issuer.name }}</h6></td>
+            </tr>
 				</table>
 				</div>
 				
@@ -50,17 +54,17 @@
 					<td>
 						
 						<h3>Cheers!</h3>
-						<p class="lead">You've earned a badge from {{ organization }}:</p>
+						<p class="lead">You've earned a badge from {{ issuer.name }}:</p>
 						
 						<!-- Badge image -->
-						<p class="badge-container"><img src="http://placekitten.com/300/300" /></p><!-- /hero -->
+            <p class="badge-container"><img src="{{ badge.image }}" /></p><!-- /hero -->
 						
 						<!-- Callout Panel 
 						<p class="callout">
 							Claim your badge and add it to your collection. <a href="#">Claim now &raquo;</a>
 						</p> /Callout Panel -->
 						
-						<h3>{{ badge_name }}</h3>
+						<h3>{{ badge.name }}</h3>
 						<p>{{ badge_earner_description }}</p>
 						<p class="claim-link"><a class="btn" href="{{ claim_url }}">Claim your badge!</a></p>
 												
@@ -77,8 +81,8 @@
 										<tr>
 											<td>				
 												
-												<h5 class="">Learn more about {{ organization }} badges:</h5>
-												<p class=""><a href="{{ about_program_url }}" class="">About our badges</a> <br /><a href="http://openbadges.org" class="">About Open Badges</a></p>
+												<h5 class="">Learn more about {{ issuer.name }} badges:</h5>
+                        <p class=""><a href="{{ issuer.url }}" class="">About our badges</a> <br /><a href="http://openbadges.org" class="">About Open Badges</a></p>
 												
 											</td>
 										</tr>
@@ -89,10 +93,12 @@
 										<tr>
 											<td>				
 																			
-												<h5 class="">Contact Info:</h5>												
-												<p>Email: <strong><a href="emailto:{{contact_email}}">{{ contact_email }}</a></strong>
+												<h5 class="">Contact Info:</h5>
+                        {% if issuer.email %}
+												<p>Email: <strong><a href="mailto:{{ issuer.email }}">{{ issuer.email }}</a></strong>
+                        {% endif %}
 												<br/>
-        								Website: <strong><a href="{{site_base_url}}">{{ organization }}</a></strong></p>
+        								Website: <strong><a href="{{site_base_url}}">{{ issuer.name }}</a></strong></p>
                 
 											</td>
 										</tr>

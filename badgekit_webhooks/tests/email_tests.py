@@ -5,20 +5,34 @@ from badgekit_webhooks import views
 from badgekit_webhooks import models
 from django.core import mail
 import datetime
+import httpretty
+import json
+import re
+
+
+badge_info_dummy = {
+        'badge': 'http://example.com/badge',
+        'issuer': 'http://example.com/issuer',
+        'url': 'http://example.com/blah',
+        'image': 'http://example.com/img',
+        }
+
+
+def register_dummy():
+    httpretty.register_uri(httpretty.GET,
+            re.compile(r'example.com/.*'),
+            body=json.dumps(badge_info_dummy))
 
 
 class MockRequest(object):
     def build_absolute_uri(self, location):
-        return "Fake-absolute-uri"
+        return "http://example.com/Fake-absolute-uri"
 
 
 class SendEmailTest(TestCase):
-    def setUp(self):
-        # monkey patch / mock the image grabber
-        self.old_get_image = utils.get_image_for_assertion
-        utils.get_image_for_assertion = lambda x: 'http://example.com/image.png'
-
+    @httpretty.activate
     def testEmailIsSent(self):
+        register_dummy()
         # Need DEBUG=True because django-inlinecss depends on it >_<
         with self.settings(BADGEKIT_SEND_CLAIM_EMAILS=True, DEBUG=True):
             models.badge_instance_issued.send(sender=MockRequest(),
@@ -27,6 +41,3 @@ class SendEmailTest(TestCase):
                     issuedOn=datetime.datetime.now())
 
             self.assertEqual(len(mail.outbox), 1)
-
-    def tearDown(self):
-        utils.get_image_for_assertion = self.old_get_image

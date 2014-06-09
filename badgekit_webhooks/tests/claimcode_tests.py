@@ -38,6 +38,7 @@ class IssuePageTest(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertTemplateUsed(resp, 'badgekit_webhooks/send_claim_code.html')
 
+    # This runs really slowly (almost a whole second) - why?  TODO
     def testGracefulNoBadgeAPI(self):
         with self.settings(BADGEKIT_API_URL="http://257.0.0.0/", # bad IP address
                 BADGEKIT_API_KEY="secret",

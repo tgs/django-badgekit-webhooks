@@ -131,24 +131,31 @@ def claim_page(request, b64_assertion_url):
 
 
 # 'sender' here is a Django signal sender, not an e-mail sender.
-# In this case, it must be a Request object.
+# In this case, it must be a Django Request object.
 def send_claim_email(sender, **kwargs):
     if not settings.BADGEKIT_SEND_CLAIM_EMAILS:
         logger.warning('Not sending e-mail to a badge earner, because settings.BADGEKIT_SEND_CLAIM_EMAILS is False')
         return
 
     logger.info('Sending e-mail to badge earner %s', kwargs['email'])
+
     abs_url = sender.build_absolute_uri(
             create_claim_url(smart_bytes(kwargs['assertionUrl'])))
+
+    site_base_url = sender.build_absolute_uri('/')
+
+    api = models.get_badgekit_api()
+    assertion = api.get_public_url(kwargs['assertionUrl'])
+    badge = api.get_public_url(assertion['badge'])
+    issuer = api.get_public_url(badge['issuer'])
+
     context = {
             'claim_url': abs_url,
-            'organization': 'open edX',
-            'badge_name': 'Open edX Contributor',
-            'badgeclass_image_url': utils.get_image_for_assertion(kwargs['assertionUrl']),
+            'assertion': assertion,
+            'badge': badge,
+            'issuer': issuer,
             'badge_earner_description': 'Contribute to the edX code, which is accomplished most visibly with an accepted pull request on GitHub. The link below WILL NOT WORK, this is coming from my localhost. But check out how responsive this email template is by resizing your viewing window! So response!',
-            'about_program_url': '#',
-            'contact_email': 'contact@example.com',
-            'site_base_url': 'http://localhost:8000',
+            'site_base_url': site_base_url,
             'unsubscribe_link': '#',
             }
     context.update(kwargs)
