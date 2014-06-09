@@ -12,7 +12,7 @@
   <div class="jumbotron">
     <h1>You've earned a badge.</h1>
 
-    <p class="lead">Claim your rightful place among the noble, the steadfast, and the brave: the fellowship of edX code contributors.</p>
+    <p class="lead">Claim your badge, and show the world!</p>
 
     <p class="badge-image">
       <img src="{{ badge_image }}">
@@ -24,18 +24,18 @@
   <div class="row marketing">
     <div class="col-lg-6">
       <h4>About edX badges</h4>
-      <p><a href="">Read all about</a> edX's commitment to open badges.</p>
+      <p><a href="">Read all about</a> {{ organization }}'s open badges program.</p>
     </div>
 
     <div class="col-lg-6">
       <h4>Criteria for this badge</h4>
-      <p>Others can do one of <a href="#">these awesome tasks</a> to join you in earning this badge.</p>
+      <p>Others can do one of <a href="{{ criteria_link }}">these awesome tasks</a> to join you in earning this badge.</p>
     </div>
 
   </div>
 
   <div class="alert alert-info">
-    If this is a real claim page, the assertion for the badge instance lives
+    You can view the raw JSON assertion for this badge 
     <a id="assertionUrl" href="{{ assertionUrl }}">here.</a>
   </div>
 

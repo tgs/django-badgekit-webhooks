@@ -120,6 +120,8 @@ def claim_page(request, b64_assertion_url):
     return render(request, 'badgekit_webhooks/claim_page.html', {
         'assertionUrl': assertionUrl,
         'badge_image': utils.get_image_for_assertion(assertionUrl),
+        'organization': "The Organization",
+        'criteria_link': "#"
         })
 
 
