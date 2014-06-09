@@ -30,7 +30,7 @@ setup(
         "pyjwt",
         "django-appconf",
         "requests",
-        "badgekit-api-client>=0.5",
+        "badgekit-api-client>=0.5.1",
         "django_inlinecss",
     ],
     test_suite="runtests.runtests",
