@@ -94,20 +94,26 @@ class SendClaimCodeView(TemplateResponseMixin, FormMixin, View):
         claim_url = request.build_absolute_uri(
                 reverse('claimcode_claim', args=[claim_slug]))
 
+        api = models.get_badgekit_api()
+        badge = code_obj['badge']
+        if 'program' in badge:
+            issuer = badge['program']
+        elif 'issuer' in badge:
+            issuer = badge['issuer']
+        else:
+            issuer = badge['system']
+
         context = {
             'claim_url': claim_url,
-            'organization': 'edx', #code_obj['badge']['issuer']['name'],
-            'badge_name': code_obj['badge']['name'],
-            'badgeclass_image_url': code_obj['badge']['imageUrl'],
-            'badge_earner_description': code_obj['badge']['earnerDescription'],
-            'about_program_url': '#',
-            'contact_email': 'contact@example.com',
+            'badge': badge,
+            'issuer': issuer,
+            'badge_earner_description': badge['earnerDescription'],
             'site_base_url': request.build_absolute_uri('/'),
             'unsubscribe_link': '#',
             }
 
         text_message = render_to_string('badgekit_webhooks/claim_code_email.txt', context)
-        html_message = render_to_string('badgekit_webhooks/claim_code_email.html', context)
+        html_message = render_to_string('badgekit_webhooks/badge_earned_email.html', context)
 
         email = EmailMultiAlternatives("You've earned a badge!", text_message,
             settings.DEFAULT_FROM_EMAIL, [code_obj['claimCode']['email']])
