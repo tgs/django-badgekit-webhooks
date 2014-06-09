@@ -117,11 +117,16 @@ def claim_page(request, b64_assertion_url):
 
     # TODO validate the URL against a whitelist
 
+    api = models.get_badgekit_api()
+    assertion = api.get_public_url(assertionUrl)
+    badge = api.get_public_url(assertion['badge'])
+    issuer = api.get_public_url(badge['issuer'])
+
     return render(request, 'badgekit_webhooks/claim_page.html', {
+        'badge': badge,
+        'assertion': assertion,
+        'issuer': issuer,
         'assertionUrl': assertionUrl,
-        'badge_image': utils.get_image_for_assertion(assertionUrl),
-        'organization': "The Organization",
-        'criteria_link': "#"
         })
 
 
