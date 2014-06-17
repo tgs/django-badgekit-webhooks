@@ -26,6 +26,11 @@ DEFAULT_SETTINGS = dict(
             "NAME": ":memory:",
         }
     },
+    MIDDLEWARE_CLASSES=[
+        "django.middleware.common.CommonMiddleware",
+        "django.contrib.sessions.middleware.SessionMiddleware",
+        "django.contrib.auth.middleware.AuthenticationMiddleware",
+    ],
     STATIC_URL="/static/",
     STATIC_ROOT="staticfiles",
     SITE_ID=1,
