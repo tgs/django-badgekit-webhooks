@@ -131,18 +131,4 @@ class Badge(object):
         badges = get_badgekit_api().list('badge', **_bkapi_kwargs)
         # return [(b['slug'], b['name'], b['strapline'], b['earnerDescription'], b['imageUrl'], b['criteriaUrl']) for b in badges['badges']]
 
-        for b in badges['badges']:
-            result.append( { 
-                'name': b['name'],
-                'strapline': b['strapline'],
-                'description': b['earnerDescription'],
-                'imageUrl': b['imageUrl'],
-                'criteriaUrl': b['criteriaUrl']
-             })
-
-        return result
-
-
-
-
-
+        return badges['badges']

@@ -8,7 +8,11 @@
           	<a href="{{ criteriaUrl }}"><img src="{{ badge.imageUrl }}"></a>
             <h4>Name: <a href="{{ criteriaUrl }}">{{ badge.name }}</a> </h4>
             <p class="badge-strapline"> {{ badge.strapline }} </p>
-            <p class="badge-description"> {{ badge.description }} </p>
+            <p class="badge-description"> {{ badge.earnerDescription }} </p>
+            {% if user.is_staff %}
+              <p class="badge-instances"><a href="{% url 'badge_instance_list' badge.slug %}"
+                class="btn btn-info btn-sm">View Instances</a></p>
+            {% endif %}
           </li>
         {% endfor %}
     </ul>
