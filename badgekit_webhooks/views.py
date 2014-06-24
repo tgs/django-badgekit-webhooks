@@ -101,8 +101,12 @@ def badge_issued_hook(request):
     return HttpResponse(json.dumps({"status": "ok"}), content_type="application/json")
 
 
-class InstanceListView(ListView):
-    model = models.BadgeInstanceNotification
+def badge_instance_list(request, badge_slug):
+    api = models.get_badgekit_api()
+    resp = api.list('instance', badge=badge_slug)
+    return render(request, 'badgekit_webhooks/badge_instance_list.html', {
+            'instances': resp['instances'],
+            })
 
 
 def create_claim_url(assertionUrl):

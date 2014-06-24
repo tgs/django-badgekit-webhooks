@@ -9,7 +9,7 @@ urlpatterns = patterns(
     url(r"^hello/$", "badgekit_webhooks.views.hello", name="badgekit_webhooks_hello"),
     url(r"^issued/$", "badgekit_webhooks.views.badge_issued_hook",
         name="badge_issued_hook"),
-    url(r"^instances/$", staff_member_required(views.InstanceListView.as_view()),
+    url(r"^instances/([-A-Za-z.0-9_]+)/$", staff_member_required(views.badge_instance_list),
         name="badge_instance_list"),
     url(r"^claim/([-A-Za-z0-9_]+)/$", 'badgekit_webhooks.views.claim_page'),
     url(r"^claim/([-A-Za-z0-9_]+)/email/(html|text)$", 'badgekit_webhooks.views.show_claim_email',

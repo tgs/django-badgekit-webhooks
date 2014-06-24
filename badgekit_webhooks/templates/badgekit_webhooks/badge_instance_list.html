@@ -3,7 +3,7 @@
 {% block body %}
     <h2>Badge Instances</h2>
     <ul>
-        {% for instance in object_list %}
+        {% for instance in instances %}
           <li><a href="{{ instance.assertionUrl }}">
             {{ instance.email }} at {{ instance.issuedOn }}</a></li>
         {% endfor %}
