@@ -36,6 +36,7 @@ DEFAULT_SETTINGS = dict(
     SITE_ID=1,
     ROOT_URLCONF="badgekit_webhooks.tests.urls",
     SECRET_KEY="notasecret",
+    BADGEKIT_VERIFY_ASSERTION_URLS = False,
 )
 
 

@@ -55,3 +55,15 @@ class ClaimPageTest(TestCase):
         url = views.create_claim_url(b"http://evil.com/semi;dquote\"")
         resp = self.client.get(url)
         self.assertFalse(b'dquote"' in resp.content)
+
+
+class AssertionVerifyTests(TestCase):
+    # Test that it rejects evil.com
+    @httpretty.activate
+    def testSomething(self):
+        with self.settings(BADGEKIT_API_URL="http://example.com/",
+                BADGEKIT_VERIFY_ASSERTION_URL=True):
+            resp = self.client.get(views.create_claim_url(b"http://evil.com/angle"))
+
+    # Test that it accepts example.com
+

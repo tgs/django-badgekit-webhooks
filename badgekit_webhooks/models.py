@@ -75,6 +75,9 @@ class BadgekitWebhooksAppConf(AppConf):
     PROGRAM = None
     "The 'program' slug to use with the Badgekit API"
 
+    VERIFY_ASSERTION_URLS = True
+    "Whether or not to verify that an assertion comes from BADGEKIT_API_URL."
+
     class Meta:
         prefix = 'badgekit'
 
