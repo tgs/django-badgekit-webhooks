@@ -16,6 +16,7 @@ import json
 import jwt
 import hashlib
 import logging
+from urlparse import urlparse
 from django.core.urlresolvers import reverse
 from . import utils
 from django.contrib.admin.views.decorators import staff_member_required
@@ -119,6 +120,14 @@ def create_claim_url(assertionUrl):
 def claim_page(request, b64_assertion_url):
     # The URL should be ASCII encoded: only IRIs use higher Unicode chars.  Right????
     assertionUrl = utils.decode_param(b64_assertion_url).decode('ascii')
+    badgekiturl =settings.BADGEKIT_API_URL
+    parseofassertionurl = urlparse(assertionUrl)
+    parseofbadgekiturl = urlparse(badgekiturl)
+    if((parseofassertionurl.scheme == parseofbadgekiturl.scheme) and (parseofassertionurl.netloc == parseofbadgekiturl.netloc)):
+        pass
+    else:
+        return HttpResponseBadRequest("The URL entered is not valid, Please verify the URL")  
+
 
     # TODO validate the URL against a whitelist
 
