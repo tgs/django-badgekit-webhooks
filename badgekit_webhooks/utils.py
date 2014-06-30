@@ -40,6 +40,14 @@ def get_image_for_assertion(assertion_url):
     """
     # TODO: make sure various URLs are subjected to a whitelist test.
     # Maybe also check that they are reasonable size, etc?
+    badgekiturl =settings.BADGEKIT_API_URL
+    parseofassertionurl = urlparse(assertionUrl)
+    parseofbadgekiturl = urlparse(badgekiturl)
+    if((parseofassertionurl.scheme == parseofbadgekiturl.scheme) and (parseofassertionurl.netloc == parseofbadgekiturl.netloc)):
+        pass
+    else:
+        return HttpResponseBadRequest("The badge you are trying to claim has not been issued here.Please conatct us if this was an error")  
+
     try:
         assertion_resp = requests.get(assertion_url)
         assertion_obj = json.loads(assertion_resp.text)
