@@ -126,7 +126,7 @@ def claim_page(request, b64_assertion_url):
     if((parseofassertionurl.scheme == parseofbadgekiturl.scheme) and (parseofassertionurl.netloc == parseofbadgekiturl.netloc)):
         pass
     else:
-        return HttpResponseBadRequest("The URL entered is not valid, Please verify the URL")  
+        return HttpResponseBadRequest("This site only allows you to claim badges issued here. It seems the link you clicked doesn't meet this condition. Please contact us if you think this was in error.")  
 
 
     # TODO validate the URL against a whitelist
