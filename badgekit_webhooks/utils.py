@@ -3,6 +3,8 @@ import base64
 import requests
 import logging
 from django.conf import settings
+from urlparse import urlparse
+from django.http import HttpResponseBadRequest
 import json
 
 
@@ -41,7 +43,7 @@ def get_image_for_assertion(assertion_url):
     # TODO: make sure various URLs are subjected to a whitelist test.
     # Maybe also check that they are reasonable size, etc?
     badgekiturl =settings.BADGEKIT_API_URL
-    parseofassertionurl = urlparse(assertionUrl)
+    parseofassertionurl = urlparse(assertion_url)
     parseofbadgekiturl = urlparse(badgekiturl)
     if((parseofassertionurl.scheme == parseofbadgekiturl.scheme) and (parseofassertionurl.netloc == parseofbadgekiturl.netloc)):
         pass
