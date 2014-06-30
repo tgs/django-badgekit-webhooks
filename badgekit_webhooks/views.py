@@ -120,16 +120,10 @@ def create_claim_url(assertionUrl):
 def claim_page(request, b64_assertion_url):
     # The URL should be ASCII encoded: only IRIs use higher Unicode chars.  Right????
     assertionUrl = utils.decode_param(b64_assertion_url).decode('ascii')
-    badgekiturl =settings.BADGEKIT_API_URL
-    parseofassertionurl = urlparse(assertionUrl)
-    parseofbadgekiturl = urlparse(badgekiturl)
-    if((parseofassertionurl.scheme == parseofbadgekiturl.scheme) and (parseofassertionurl.netloc == parseofbadgekiturl.netloc)):
+    if(utils.test_whitelist_assertion_url(assertionUrl)):
         pass
     else:
         return HttpResponseBadRequest("This site only allows you to claim badges issued here. It seems the link you clicked doesn't meet this condition. Please contact us if you think this was in error.")  
-
-
-    # TODO validate the URL against a whitelist
 
     api = models.get_badgekit_api()
     assertion = api.get_public_url(assertionUrl)

@@ -32,7 +32,6 @@ def urlsafe_base64_decode(s):
 decode_param = urlsafe_base64_decode
 encode_param = urlsafe_base64_encode
 
-
 def get_image_for_assertion(assertion_url):
     """
     Given a badge assertion URL, return an image for that assertion.
@@ -40,16 +39,12 @@ def get_image_for_assertion(assertion_url):
     If the assertion is not available or parseable, returns a default
     image, which is settings.BADGEKIT_DEFAULT_BADGE_IMAGE.
     """
-    # TODO: make sure various URLs are subjected to a whitelist test.
-    # Maybe also check that they are reasonable size, etc?
-    badgekiturl =settings.BADGEKIT_API_URL
-    parseofassertionurl = urlparse(assertion_url)
-    parseofbadgekiturl = urlparse(badgekiturl)
-    if((parseofassertionurl.scheme == parseofbadgekiturl.scheme) and (parseofassertionurl.netloc == parseofbadgekiturl.netloc)):
+    # Make sure assertion is one of the badges under the purview of this system
+    if (test_whitelist_assertion_url(assertion_url)):
         pass
     else:
-        return HttpResponseBadRequest("The badge you are trying to claim has not been issued here.Please conatct us if this was an error")  
-
+        return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
+    
     try:
         assertion_resp = requests.get(assertion_url)
         assertion_obj = json.loads(assertion_resp.text)
@@ -83,6 +78,17 @@ def get_image_for_assertion(assertion_url):
 #         logging.exception('Problem while determining image for assertion %s' % assertion_url)
 #         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
 
+def test_whitelist_assertion_url(assertion_url):
+    # For now, the only whitelisted site is the badgekit install
+    whitelisturl = settings.BADGEKIT_API_URL
+    parseofwhitelisturl = urlparse(whitelisturl)
+
+    parseofassertionurl = urlparse(assertion_url)
+
+    if((parseofassertionurl.scheme == parseofwhitelisturl.scheme) and (parseofassertionurl.netloc == parseofwhitelisturl.netloc)):
+        return True
+    else:
+        return False  
 
 
 
