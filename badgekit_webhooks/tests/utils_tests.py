@@ -67,15 +67,17 @@ class ClaimImageTest(TestCase):
                     re.compile('example.com/assertion'),
                     body=json.dumps({
                         'uid': 12435,
-                        'recipient':'test@test.com'
+                        'recipient':'test@test.com',
+                        'badge': 'http://example.com/badge.json',
+                        'issuedOn':'2014-05-16T01:23:45'
                 
                         }))
         property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_ID')
         property_value2 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_RECIPIENT')
-        
-        
+        property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_URL')
+        property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_ISSUE_DATE')
+
         #resp = self.client.get(url)
-    
         #self.assertEqual(resp.status_code, 200)
 
 
