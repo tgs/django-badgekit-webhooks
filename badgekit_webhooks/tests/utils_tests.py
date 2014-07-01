@@ -59,3 +59,32 @@ class ClaimImageTest(TestCase):
             url = utils.get_image_for_assertion('http://example.com/assertion.json')
 
             self.assertEqual(url, good_url)
+
+    @httpretty.activate
+    def testassertionproperties(self):
+        
+        httpretty.register_uri(httpretty.GET,
+                    re.compile('example.com/assertion'),
+                    body=json.dumps({
+                        'uid': 12435,
+                        'recipient':'test@test.com'
+                
+                        }))
+        property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_ID')
+        property_value2 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_RECIPIENT')
+        
+        
+        #resp = self.client.get(url)
+    
+        #self.assertEqual(resp.status_code, 200)
+
+
+
+
+
+
+
+
+
+
+
