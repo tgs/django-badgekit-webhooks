@@ -16,6 +16,7 @@ import json
 import jwt
 import hashlib
 import logging
+from urlparse import urlparse
 from django.core.urlresolvers import reverse
 from . import utils
 from django.contrib.admin.views.decorators import staff_member_required
@@ -119,8 +120,10 @@ def create_claim_url(assertionUrl):
 def claim_page(request, b64_assertion_url):
     # The URL should be ASCII encoded: only IRIs use higher Unicode chars.  Right????
     assertionUrl = utils.decode_param(b64_assertion_url).decode('ascii')
-
-    # TODO validate the URL against a whitelist
+    if(utils.test_whitelist_assertion_url(assertionUrl)):
+        pass
+    else:
+        return HttpResponseBadRequest("This site only allows you to claim badges issued here. It seems the link you clicked doesn't meet this condition. Please contact us if you think this was in error.")  
 
     api = models.get_badgekit_api()
     assertion = api.get_public_url(assertionUrl)
