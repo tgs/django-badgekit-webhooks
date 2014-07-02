@@ -90,23 +90,32 @@ def test_whitelist_assertion_url(assertion_url):
     else:
         return False  
 
-def get_assertion_properties(assertion_url,prop):
+
+
+
+def get_assertion_properties(assertion_url):
 
     assertion_resp= requests.get(assertion_url)
     assertion_obj=json.loads(assertion_resp.text)
-    badge_id= assertion_obj['uid']
-    badge_recipient=assertion_obj['recipient']
-    badge_url= assertion_obj['badge']
-    badge_issue_date= assertion_obj['issuedOn']
-    
-    return{
-    
-    'BADGE_ID':badge_id,
-    'BADGE_RECIPIENT':badge_recipient,
-    'BADGE_URL':badge_url,
-    'BADGE_ISSUE_DATE':badge_issue_date
 
-    }[prop]
+    return assertion_obj
+
+
+
+
+    #badge_id= assertion_obj['uid']
+    #badge_recipient=assertion_obj['recipient']
+    #badge_url= assertion_obj['badge']
+    #badge_issue_date= assertion_obj['issuedOn']
+    
+    #return{
+    
+    #'BADGE_ID':badge_id,
+    #'BADGE_RECIPIENT':badge_recipient,
+    #'BADGE_URL':badge_url,
+    #'BADGE_ISSUE_DATE':badge_issue_date
+
+    #}[prop]
 
     
 

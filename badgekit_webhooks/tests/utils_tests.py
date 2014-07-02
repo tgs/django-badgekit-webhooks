@@ -70,12 +70,19 @@ class ClaimImageTest(TestCase):
                         'recipient':'test@test.com',
                         'badge': 'http://example.com/badge.json',
                         'issuedOn':'2014-05-16T01:23:45'
-                
+                    
                         }))
-        property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_ID')
-        property_value2 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_RECIPIENT')
-        property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_URL')
-        property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_ISSUE_DATE')
+        assertion_obj_res=utils.get_assertion_properties('http://example.com/assertion.json')
+
+        self.assertEqual(assertion_obj_res['uid'],12435)
+        self.assertEqual(assertion_obj_res['recipient'],'test@test.com')
+        self.assertEqual(assertion_obj_res['badge'],'http://example.com/badge.json')
+        self.assertEqual(assertion_obj_res['issuedOn'],'2014-05-16T01:23:45')
+        
+        #property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_ID')
+        #property_value2 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_RECIPIENT')
+        #property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_URL')
+        #property_value1 = utils.get_assertion_properties('http://example.com/assertion.json','BADGE_ISSUE_DATE')
 
         #resp = self.client.get(url)
         #self.assertEqual(resp.status_code, 200)
