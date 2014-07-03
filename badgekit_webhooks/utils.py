@@ -97,8 +97,22 @@ def get_assertion_properties(assertion_url):
 
     assertion_resp= requests.get(assertion_url)
     assertion_obj=json.loads(assertion_resp.text)
+    
+    badge_id= assertion_obj['uid']
+    badge_recipient=assertion_obj['recipient']
+    badge_url= assertion_obj['badge']
+    badge_issue_date= assertion_obj['issuedOn']
 
-    return assertion_obj
+    assertion_prop_dict={
+
+    'BADGE_ID':badge_id,
+    'BADGE_RECIPIENT':badge_recipient,
+    'BADGE_URL':badge_url,
+    'BADGE_ISSUE_DATE':badge_issue_date
+
+    }
+
+    return assertion_prop_dict
 
 
 
