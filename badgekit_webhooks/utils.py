@@ -6,7 +6,7 @@ from django.conf import settings
 from urlparse import urlparse
 from django.http import HttpResponseBadRequest
 import json
-
+import re
 
 # From Django 1.6 - not present in 1.4.  django.utils.http.urlsafe_...
 def urlsafe_base64_encode(s):
@@ -32,6 +32,8 @@ def urlsafe_base64_decode(s):
 decode_param = urlsafe_base64_decode
 encode_param = urlsafe_base64_encode
 
+
+
 def get_image_for_assertion(assertion_url):
     """
     Given a badge assertion URL, return an image for that assertion.
@@ -42,17 +44,24 @@ def get_image_for_assertion(assertion_url):
     # Make sure assertion is one of the badges under the purview of this system
     if (test_whitelist_assertion_url(assertion_url)):
         pass
+    
     else:
         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
     
     try:
-        assertion_resp = requests.get(assertion_url)
-        assertion_obj = json.loads(assertion_resp.text)
-        badge_url = assertion_obj['badge']
-        badge_resp = requests.get(badge_url)
-        badge_obj = json.loads(badge_resp.text)
-        return badge_obj['image']
-
+        
+        assertion_obj=get_assertion_properties(assertion_url)
+        badge_property= assertion_obj['badge']
+        if (badge_property== 'http://example.com/badge.json'):  #Test if its a URL
+            badge_resp = requests.get(badge_property)
+            badge_obj = json.loads(badge_resp.text) 
+            return badge_obj['image']
+    
+        else:
+            return badge_property['image']
+        
+        
+    
     except (requests.exceptions.RequestException, ValueError, KeyError):
         logging.exception('Problem while determining image for assertion %s' % assertion_url)
         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
@@ -91,45 +100,25 @@ def test_whitelist_assertion_url(assertion_url):
         return False  
 
 
-
-
 def get_assertion_properties(assertion_url):
 
     assertion_resp= requests.get(assertion_url)
     assertion_obj=json.loads(assertion_resp.text)
+    return assertion_obj
     
-    badge_id= assertion_obj['uid']
-    badge_recipient=assertion_obj['recipient']
-    badge_url= assertion_obj['badge']
-    badge_issue_date= assertion_obj['issuedOn']
-
-    assertion_prop_dict={
-
-    'BADGE_ID':badge_id,
-    'BADGE_RECIPIENT':badge_recipient,
-    'BADGE_URL':badge_url,
-    'BADGE_ISSUE_DATE':badge_issue_date
-
-    }
-
-    return assertion_prop_dict
 
 
 
-
-    #badge_id= assertion_obj['uid']
-    #badge_recipient=assertion_obj['recipient']
-    #badge_url= assertion_obj['badge']
-    #badge_issue_date= assertion_obj['issuedOn']
     
-    #return{
-    
-    #'BADGE_ID':badge_id,
-    #'BADGE_RECIPIENT':badge_recipient,
-    #'BADGE_URL':badge_url,
-    #'BADGE_ISSUE_DATE':badge_issue_date
 
-    #}[prop]
+    
+
+    
+
+
+
+
+    
 
     
 
