@@ -65,18 +65,19 @@ class ClaimImageTest(TestCase):
         
     @httpretty.activate
     def testassertion_properties_badgeURL(self):
-        
-        httpretty.register_uri(httpretty.GET,
+        default_url = 'http://example.com/no.gophers.png'
+        with self.settings(BADGEKIT_DEFAULT_BADGE_IMAGE=default_url):
+            httpretty.register_uri(httpretty.GET,
                     re.compile('example.com/assertion'),
                     body=json.dumps({
 
-                        'uid': 12435,
-                        'recipient':'test@test.com',
-                        'badge': 'http://example.com/badge.json',
-                        'issuedOn':'1359217910'
+                        "uid": "12435",
+                        "recipient":"test@test.com",
+                        "badge": "http://example.com/badge.json",
+                        "issuedOn":1359217910
                     
                         }))
-        httpretty.register_uri(httpretty.GET,
+            httpretty.register_uri(httpretty.GET,
                     re.compile('example.com/badge'),
                     body=json.dumps({
                         "name": "Awesome Robotics Badge",
@@ -103,14 +104,15 @@ class ClaimImageTest(TestCase):
 
     @httpretty.activate
     def testassertion_properties_badgeobj(self):
-        
-        httpretty.register_uri(httpretty.GET,
+        default_url = 'http://example.com/no.gophers.png'
+        with self.settings(BADGEKIT_DEFAULT_BADGE_IMAGE=default_url):
+            httpretty.register_uri(httpretty.GET,
                     re.compile('example.com/assertion'),
                     body=json.dumps({
                         
-                        'uid': 12435,
-                        'recipient':'test@test.com',
-                        'badge': {
+                        "uid": "12435",
+                        "recipient":"test@test.com",
+                        "badge": {
                         "name": "Awesome Robotics Badge",
                         "description": "For doing awesome things with robots that people think is pretty great.",
                         "image": "https://example.org/robotics-badge.png",
@@ -129,7 +131,7 @@ class ClaimImageTest(TestCase):
                             }
                           ]
                         },
-                        'issuedOn':'1359217910'
+                        "issuedOn":1359217910
 
                         }))
 

@@ -50,15 +50,9 @@ def get_image_for_assertion(assertion_url):
     
     try:
         
-        assertion_obj=get_assertion_properties(assertion_url)
-        badge_property= assertion_obj['badge']
-        if (badge_property== 'http://example.com/badge.json'):  #Test if its a URL
-            badge_resp = requests.get(badge_property)
-            badge_obj = json.loads(badge_resp.text) 
-            return badge_obj['image']
-    
-        else:
-            return badge_property['image']
+        badge_prop=get_assertion_properties(assertion_url)
+        return badge_prop['image']
+        
         
         
     
@@ -104,7 +98,15 @@ def get_assertion_properties(assertion_url):
 
     assertion_resp= requests.get(assertion_url)
     assertion_obj=json.loads(assertion_resp.text)
-    return assertion_obj
+    badge_property= assertion_obj['badge']
+        
+    if isinstance(badge_property,basestring):   #Test if the badge field is a URL string else return the badge object
+        badge_resp = requests.get(badge_property)
+        badge_obj = json.loads(badge_resp.text) 
+        return badge_obj
+    
+    else:
+        return badge_property
     
 
 
