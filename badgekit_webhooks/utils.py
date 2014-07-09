@@ -33,7 +33,6 @@ decode_param = urlsafe_base64_decode
 encode_param = urlsafe_base64_encode
 
 
-
 def get_image_for_assertion(assertion_url):
     """
     Given a badge assertion URL, return an image for that assertion.
@@ -44,42 +43,19 @@ def get_image_for_assertion(assertion_url):
     # Make sure assertion is one of the badges under the purview of this system
     if (test_whitelist_assertion_url(assertion_url)):
         pass
-    
+
     else:
         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
-    
+
     try:
         
-        badge_prop=get_assertion_properties(assertion_url)
-        return badge_prop['image']
-        
-        
-        
-    
+        assertion_obj = get_assertion_properties(assertion_url)
+        return assertion_obj['badge']['image']
+
     except (requests.exceptions.RequestException, ValueError, KeyError):
         logging.exception('Problem while determining image for assertion %s' % assertion_url)
         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
 
-# def get_properties_for_assertion(assertion_url, props):
-#     """
-#     Given a badge assertion URL, return a specified list of properties for that assertion.
-
-#     If the assertion is not available or parseable, returns a default
-#     image, which is settings.BADGEKIT_DEFAULT_BADGE_IMAGE.
-#     """
-#     # TODO: make sure various URLs are subjected to a whitelist test.
-#     # Maybe also check that they are reasonable size, etc?
-#     try:
-#         assertion_resp = requests.get(assertion_url)
-#         assertion_obj = json.loads(assertion_resp.text)
-#         badge_url = assertion_obj['badge']
-#         badge_resp = requests.get(badge_url)
-#         badge_obj = json.loads(badge_resp.text)
-#         return badge_obj['image']
-
-#     except (requests.exceptions.RequestException, ValueError, KeyError):
-#         logging.exception('Problem while determining image for assertion %s' % assertion_url)
-#         return settings.BADGEKIT_DEFAULT_BADGE_IMAGE
 
 def test_whitelist_assertion_url(assertion_url):
     # For now, the only whitelisted site is the badgekit install
@@ -95,38 +71,13 @@ def test_whitelist_assertion_url(assertion_url):
 
 
 def get_assertion_properties(assertion_url):
+    assertion_resp = requests.get(assertion_url)
+    assertion_obj = json.loads(assertion_resp.text)
+    badge_property = assertion_obj['badge']
 
-    assertion_resp= requests.get(assertion_url)
-    assertion_obj=json.loads(assertion_resp.text)
-    badge_property= assertion_obj['badge']
-        
-    if isinstance(badge_property,basestring):   #Test if the badge field is a URL string else return the badge object
+    if isinstance(badge_property, basestring):   #Test if the badge field is a URL string else return the badge object
         badge_resp = requests.get(badge_property)
         badge_obj = json.loads(badge_resp.text) 
-        return badge_obj
-    
-    else:
-        return badge_property
-    
+        assertion_obj['badge'] = badge_obj
 
-
-
-    
-
-    
-
-    
-
-
-
-
-    
-
-    
-
-
-
-
-
-
-        
+    return assertion_obj

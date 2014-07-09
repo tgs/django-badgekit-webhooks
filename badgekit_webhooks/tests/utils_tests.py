@@ -137,21 +137,3 @@ class ClaimImageTest(TestCase):
 
         url=utils.get_image_for_assertion('http://example.com/assertion.json')
         self.assertEqual(url,'https://example.org/robotics-badge.png')
-
-        
-   
-        
-       
-        
-       
-
-
-
-
-
-
-
-
-
-
-
